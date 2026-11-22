@@ -1,4 +1,4 @@
-// This CommonJS Babel config uses .cjs because the cron package is ESM.
+// The build emits CommonJS, so keep the package Babel config explicitly CommonJS.
 module.exports = __babel => {
   // Use cache.
   __babel.cache(true)
