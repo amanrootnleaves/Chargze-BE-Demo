@@ -283,6 +283,11 @@ _Express.get("/", (req, res) => {
   res.redirect("/v1/graphql");
 });
 
+_Express.get("/health", (req, res) => {
+  res.set('Cache-Control', 'no-store')
+  res.status(204).end()
+})
+
 _Express.use(mw());
 _Express.use(_Server.graphqlEndpoint, _Server);
 _Express.use(Express.json({ 

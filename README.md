@@ -94,5 +94,8 @@ Once server successfully boots up you can visit following url's.
 [2. Playground](http:://localhost:3000/play)<br/>
 [3. Subscription](http:://localhost:3000/subscription)<br/>
 [4. Database Admin](http:://localhost:4466/_admin)<br/>
+
+**Health check / keep-alive:** `GET /health` returns `204 No Content` without requiring authentication. For example, use `https://<your-render-service>.onrender.com/health` with a periodic API caller.
+
 # rezune
 # dotsinspace-chargze-node
