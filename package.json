@@ -2,31 +2,10 @@
   "name": "chargze-be",
   "version": "1.0.1",
   "private": true,
+  "packageManager": "pnpm@11.15.1",
   "lint-staged": {
     "*.{js,md, json}": [
       "eslint --fix"
-    ]
-  },
-  "pnpm": {
-    "overrides": {
-      "graphql": "16.8.0"
-    },
-    "ignoredBuiltDependencies": [
-      "@apollo/protobufjs",
-      "core-js",
-      "core-js-pure",
-      "prisma",
-      "tld-list",
-      "unix-dgram"
-    ],
-    "onlyBuiltDependencies": [
-      "@prisma/client",
-      "@prisma/engines",
-      "argon2",
-      "aws-sdk",
-      "esbuild",
-      "protobufjs",
-      "sharp"
     ]
   },
   "workspaces": [
@@ -121,8 +100,7 @@
     "husky": "8.0.3",
     "lint-staged": "10.4.0",
     "npm": "10.4.0",
-    "npm-check-updates": "16.14.14",
-    "pnpm": "8.15.0"
+    "npm-check-updates": "16.14.14"
   },
   "engines": {
     "node": ">=20"

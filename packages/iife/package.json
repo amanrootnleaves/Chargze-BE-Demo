@@ -34,8 +34,7 @@
     "eslint": "8.39.0",
     "eslint-config-prettier": "8.8.0",
     "eslint-plugin-prettier": "4.2.1",
-    "npm-check-updates": "16.10.9",
-    "pnpm": "8.3.1"
+    "npm-check-updates": "16.10.9"
   },
   "dependencies": {
     "underscore": "^1.13.8"

@@ -12,6 +12,8 @@ allowBuilds:
   sharp: true
   tld-list: false
   unix-dgram: false
+overrides:
+  graphql: 16.8.0
 ignore-workspace-root-check: true
 packages:
   # all packages in sub dirs of packages/ and components/
