@@ -1,0 +1,7 @@
+enum DATE_PERIOD {
+  TODAY
+  WEEK
+  MONTH
+  HALF_YEAR
+  YEAR
+}

@@ -1,0 +1,41 @@
+type VehiclesCategory {
+  id: ID!
+  createdAt: DateTime
+  updatedAt: DateTime
+  name: String
+  slug: String
+  description: String
+  iconStoredAt: JSON
+  imageStoredAt: JSON
+  isActive: Boolean
+  isFeatured: Boolean
+  sortOrder: Int
+  _totalCount: Int
+}
+
+extend type Query {
+  VehiclesCategoryRead(
+    vehiclesCategoryId: ID
+    search: String
+    isActive: Boolean
+    take: PositiveInt
+    skip: Int
+  ): [VehiclesCategory!]!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+
+extend type Mutation {
+  VehiclesCategoryCreate(
+    name: String!
+    description: String
+    isActive: Boolean
+    imageStoredAt: JSON
+  ): VehiclesCategory!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  VehiclesCategoryDelete(ids: [ID!]!): Boolean!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}

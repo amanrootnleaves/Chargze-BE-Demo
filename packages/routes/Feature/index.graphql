@@ -1,0 +1,52 @@
+#
+# GRAPH
+#
+type Feature {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  displayName: String
+  description: String
+  thumbnailStoredAt: Image
+  fields: JSON
+  message: String
+  status: String
+  _totalCount: Int
+  _aggregate: JSON
+  _analytics: JSON
+}
+
+
+#
+# RESOLVER
+#
+extend type Mutation {
+  FeatureCreate(
+    displayName: String!
+    description: String!
+    thumbnailStoredAt: Image
+  ): Feature! @isAuthenticated(accountType: [ADMIN]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  FeatureUpdate(
+    featureId: ID!
+    displayName: String
+    description: String
+    thumbnailStoredAt: Image
+    fields: JSON
+  ): Feature! @isAuthenticated(accountType: [ADMIN]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  FeatureDelete(featureId: ID!): Feature! @isAuthenticated(accountType: [ADMIN]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  FeatureUpload(featureId: ID!, thumbnailStoredAt: Image!): Feature! @isAuthenticated(accountType: [ADMIN]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+extend type Query {
+  FeatureRead(
+    featureId: ID
+    displayNameToSearch: String
+    filter: JSON
+    sort: JSON
+    take: PositiveInt
+    skip: Int
+  ): [Feature!]!
+  @isAuthenticated
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  FeatureAggregate(featureId: ID!, aggregate: JSON, filter: JSON, startDate: DateTime, endDate: DateTime): Feature! @isAuthenticated(accountType: [ADMIN, COMPANY, VENDOR, EMPLOYEE]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  FeatureReadTop(skip: Int, take: PositiveInt, endDate: DateTime, startDate: DateTime): Feature! @isAuthenticated(accountType: [ADMIN, COMPANY, VENDOR, EMPLOYEE]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}

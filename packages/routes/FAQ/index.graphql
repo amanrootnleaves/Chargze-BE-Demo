@@ -1,0 +1,70 @@
+#
+# TYPES
+#
+type FAQ {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  question: String!
+  answer: String!
+  category: FAQ_CATEGORY!
+  isActive: Boolean!
+  displayOrder: Int!
+}
+type DeleteFAQResponse {
+  id: ID!
+  isDeleted: Boolean!
+}
+
+#
+# INPUT
+#
+input CreateFAQInput {
+  question: String!
+  answer: String!
+  category: FAQ_CATEGORY!
+  isActive: Boolean
+  displayOrder: Int
+}
+input UpdateFAQInput {
+  id: ID!
+  question: String
+  answer: String
+  category: FAQ_CATEGORY
+  isActive: Boolean
+  displayOrder: Int
+}
+
+#
+# QUERY
+#
+extend type Query {
+  GetFAQs(category: FAQ_CATEGORY): [FAQ!]!
+}
+
+#
+# MUTATION
+#
+extend type Mutation {
+  CreateFAQ(input: CreateFAQInput!): FAQ!
+    @isAuthenticated(accountType: [ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  UpdateFAQ(input: UpdateFAQInput!): FAQ!
+    @isAuthenticated(accountType: [ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  DeleteFAQ(id: ID!): DeleteFAQResponse!
+    @isAuthenticated(accountType: [ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+
+#
+# SUBSCRIPTION
+#
+extend type Subscription {
+  createdAt: DateTime
+}
+
+
+

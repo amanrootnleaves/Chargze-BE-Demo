@@ -1,0 +1,86 @@
+# --- Types ---
+
+type ChargingStation {
+  id: ID!
+  name: String
+}
+
+type AccountStationAccess {
+  id: ID!
+  Account__fk__: String!
+  ChargingStation__fk__: String!
+  isDeleted: Boolean
+  ChargingStation: ChargingStation
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type Account {
+  id: ID!
+  fullName: String
+  email: String
+  adminRole: ADMIN_ROLE
+  status: String
+  AccountStationAccess: [AccountStationAccess!]
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+# --- Input Types ---
+
+input AssignTeamMemberInput {
+  fullName: String
+  email: String!
+  role: ADMIN_ROLE!
+  stationIds: [String!]!
+}
+
+input AssignPartnerInput {
+  fullName: String
+  email: String!
+  role: ADMIN_ROLE!
+  stationIds: [String!]!
+  customerId: String
+}
+
+# --- Responses ---
+
+type AssignRoleResponse {
+  success: Boolean!
+  message: String!
+  account: Account
+}
+type DeleteRbacAccountResponse{
+success:Boolean!
+message:String!
+}
+input UpdateAccountRoleInput {
+  accountId: ID!
+  role: ADMIN_ROLE!
+}
+
+type UpdateRoleResponse {
+  success: Boolean!
+  message: String!
+  account: Account
+}
+
+# --- Queries & Mutations ---
+
+extend type Query {
+  
+  RbacAccounts(search: String, roles: [ADMIN_ROLE!]): [Account!]!
+
+  ExportRbacAccounts(
+  format: EXPORT_FORMAT!
+  search: String
+  roles: [ADMIN_ROLE!]
+): ExportResponse!
+}
+
+extend type Mutation {
+  AssignTeamMemberRole(input: AssignTeamMemberInput!): AssignRoleResponse!
+  AssignPartnerRole(input: AssignPartnerInput!): AssignRoleResponse!
+  DeleteRbacAccount(id: ID!):DeleteRbacAccountResponse!
+  UpdateAccountRole(input: UpdateAccountRoleInput!): UpdateRoleResponse!
+}

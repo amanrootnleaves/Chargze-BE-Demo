@@ -1,0 +1,56 @@
+#
+# GRAPH
+#
+
+type Cart {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  isDeleted: Boolean
+  CustomerProfile: CustomerProfile
+  Items: [CartItem]
+  message: String
+  statusMsg: String
+}
+
+type CartResponse {
+  cart: Cart
+  message: String
+  statusMsg: String
+}
+
+type CartItem {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  isDeleted: Boolean
+  quantity: Int
+  Product: Product
+  ElectricVehicle: ElectricVehicle
+  Cart: Cart
+  message: String
+  statusMsg: String
+}
+
+#
+# RESOLVER
+#
+extend type Query {
+  CartRead(cartId: ID): CartResponse!
+    @isAuthenticated(accountType: [CUSTOMER, ADMIN, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+
+extend type Mutation {
+  AddToCart(productId: ID!, quantity: Int = 1): Cart!
+    @isAuthenticated(accountType: [CUSTOMER, ADMIN, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  RemoveFromCart(cartItemId: ID!): Cart!
+    @isAuthenticated(accountType: [CUSTOMER, ADMIN, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  UpdateCartItemQuantity(cartItemId: ID!, action: String!): Cart!
+    @isAuthenticated(accountType: [CUSTOMER, ADMIN, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}

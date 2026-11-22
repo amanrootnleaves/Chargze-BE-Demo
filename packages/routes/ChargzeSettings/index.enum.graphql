@@ -1,0 +1,13 @@
+enum GatewayName {
+  RAZORPAY
+  STRIPE
+  PAYU
+}
+ 
+enum ServiceName {
+  GOOGLE_MAPS
+  TWILIO
+  SENDGRID
+  FIREBASE
+  SENTRY
+}

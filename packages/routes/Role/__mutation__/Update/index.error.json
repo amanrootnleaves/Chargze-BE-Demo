@@ -1,0 +1,5 @@
+{
+  "EXPECTED_ACCOUNT": "Expected account but found undefined.",
+  "EXPECTED_FEATURE_REQUEST_DETAILS": "Expected feature request details but found undefined.",
+  "EXPECTED_ROLE_TO_EXIST": "Expected role to exist but found undefined."
+}

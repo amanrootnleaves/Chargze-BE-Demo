@@ -1,0 +1,4 @@
+{
+  "ACCOUNT_EMAIL_EXISTS": "It seems that email you are trying to use is already in use.",
+  "ACCOUNT_REGISTRATION_FAILED": "Failed to register account."
+}

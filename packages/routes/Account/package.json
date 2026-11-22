@@ -1,0 +1,11 @@
+{
+  "name": "routesaccount",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "development@rootandleaves.com",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "uuid": "^13.0.0"
+  }
+}

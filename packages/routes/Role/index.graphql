@@ -1,0 +1,59 @@
+#
+# GRAPH
+#
+type Role {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  displayName: String
+  description: String
+  role: JSON
+  Account: [Account]
+  Company: Company
+  message: String
+  status: String
+  _totalCount: Int
+}
+
+#
+# RESOLVER
+#
+extend type Mutation {
+  RoleCreate(
+    displayName: String!
+    description: String!
+    role: JSON
+  ): Role!
+  @isAuthenticated(accountType: [ADMIN, COMPANY])
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  RoleUpdate(
+    roleId: ID!
+    displayName: String,
+    description: String,
+    role: JSON
+  ): Role!
+  @isAuthenticated(accountType: [ADMIN, COMPANY])
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  RoleDelete(
+    roleId: ID!
+  ): Role!
+  @isAuthenticated(accountType: [ADMIN, COMPANY])
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+extend type Query {
+  RoleRead(
+    companyId: ID
+    sort: JSON,
+    filter: JSON,
+    roleId: ID
+    take: PositiveInt
+    skip: Int
+    displayNameToSearch: String
+    roleToSearch: String
+  ): [Role!]!
+  @isAuthenticated(accountType: [COMPANY, ADMIN])
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  RoleExist(role: [String!]): [Role!]!
+  @isAuthenticated(accountType: [COMPANY, ADMIN])
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}

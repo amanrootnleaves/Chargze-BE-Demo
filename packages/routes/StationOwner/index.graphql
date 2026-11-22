@@ -1,0 +1,288 @@
+#
+# TYPES
+#
+type StationOwner {
+  id: ID!
+  displayId: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+
+  partnerType: PARTNER_TYPE!
+  status: OWNER_STATUS!
+  profileStatus: OwnerProfileStatus!
+
+  onboardingDate: DateTime!
+  closedDate: DateTime
+
+  ownerName: String!
+  email: EmailAddress!
+  phoneNumber: String!
+
+  addressLineOne: String!
+  addressLineTwo: String
+  pincode: String!
+  city: String!
+  state: String!
+
+  LegalDetails: LegalDetails
+  BankingDetails: BankingDetails
+  OwnerDocument: OwnerDocument
+}
+
+type LegalDetails {
+  entityName: String
+  entityType: String!
+  aadhaarNumber: String!
+  panNumber: String!
+  gstNumber: String!
+}
+
+type BankingDetails {
+  accountHolderName: String!
+  accountHolderNumber: String!
+  accountHolderBank: String!
+  ifscCode: String!
+}
+
+type OwnerDocument {
+  aadhaar: String!
+  pancard: String!
+  gst: String!
+  cancelledCheque: String!
+}
+#
+# UPDATE INPUTS
+#
+input UpdateStationOwnerInput {
+  id: ID!
+
+  partnerType: PARTNER_TYPE
+  status: OWNER_STATUS
+  profileStatus: OwnerProfileStatus
+
+  onboardingDate: DateTime
+  closedDate: DateTime
+
+  ownerName: String
+  email: EmailAddress
+  phoneNumber: String
+
+  addressLineOne: String
+  addressLineTwo: String
+  pincode: String
+  city: String
+  state: String
+
+  legalDetails: UpdateLegalDetailsInput
+  bankingDetails: UpdateBankingDetailsInput
+  ownerDocument: UpdateOwnerDocumentInput
+}
+
+input UpdateLegalDetailsInput {
+  entityName: String
+  entityType: String
+  aadhaarNumber: String
+  panNumber: String
+  gstNumber: String
+}
+
+input UpdateBankingDetailsInput {
+  accountHolderName: String
+  accountHolderNumber: String
+  accountHolderBank: String
+  ifscCode: String
+}
+
+input UpdateOwnerDocumentInput {
+  aadhaar: String
+  pancard: String
+  gst: String
+  cancelledCheque: String
+}
+
+#
+# INPUT
+#
+
+input CreateStationOwnerInput {
+  partnerType: PARTNER_TYPE!
+  status: OWNER_STATUS!
+  onboardingDate: DateTime!
+  closedDate: DateTime
+
+  ownerName: String!
+  email: EmailAddress!
+  phoneNumber: String!
+
+  addressLineOne: String!
+  addressLineTwo: String!
+  pincode: String!
+  city: String!
+  state: String!
+
+  legalDetails: LegalDetailsInput
+  bankingDetails: BankingDetailsInput
+  ownerDocument: OwnerDocumentInput
+}
+
+input LegalDetailsInput {
+  entityName: String
+  entityType: String!
+  aadhaarNumber: String!
+  panNumber: String!
+  gstNumber: String!
+}
+
+input BankingDetailsInput {
+  accountHolderName: String!
+  accountHolderNumber: String!
+  accountHolderBank: String!
+  ifscCode: String!
+}
+
+input OwnerDocumentInput {
+  aadhaar: String!
+  pancard: String!
+  gst: String!
+  cancelledCheque: String!
+}
+
+#
+# MUTATION
+#
+extend type Mutation {
+  CreateStationOwner(input: CreateStationOwnerInput!): StationOwner!
+    @isAuthenticated(accountType: [COMPANY, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  UpdateStationOwner(input: UpdateStationOwnerInput!): StationOwner!
+    @isAuthenticated(accountType: [COMPANY, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+
+#
+#QUERY
+#
+extend type Query {
+  getAllStationOwners(
+    input: GetAllStationOwnersInput
+  ): StationOwnerListResponse!
+  getAllStationOwnersWithStations(
+    input: GetAllStationOwnersWithStationsInput
+  ): StationOwnerWithStationsListResponse!
+  getStationOwnerKpiStats: StationOwnerKpiStats!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  exportStationOwners(
+    dateFilter: DateFilterInput
+    format: EXPORT_FORMAT!
+  ): ExportResponse!
+    @isAuthenticated(accountType: [ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  getStationOwnerDetails(id: ID!): StationOwner
+}
+
+input GetAllStationOwnersWithStationsInput {
+  search: String
+
+  ownerId: String
+  ownerName: String
+  ownerLocation: String
+  stationType: String
+  ownership: String
+  accessType: String
+  state: String
+  profileStatus: OwnerProfileStatus
+  status: String
+
+  dateFilter: OwnerDateFilterInput
+
+  page: Int = 1
+  limit: Int = 10
+}
+input GetAllStationOwnersInput {
+  search: String
+  stationType: String
+  ownership: String
+  accessType: String
+  state: String
+  profileStatus: OwnerProfileStatus
+  dateFilter: OwnerDateFilterInput
+
+  page: Int = 1
+  limit: Int = 10
+}
+type StationOwnerWithStationsListResponse {
+  owners: [StationOwnerWithStations!]!
+  totalCount: Int!
+}
+type StationOwnerWithStations {
+  id: ID!
+  displayId: String!
+  ownerName: String!
+  status: OWNER_STATUS!
+  profileStatus: OwnerProfileStatus!
+
+  chargingStations: [OwnerChargingStation!]
+}
+type OwnerChargingStation {
+  id: ID!
+  stationName: String!
+
+  stationType: String
+  ownership: String
+  accessType: String
+
+  chargingPoint: Int!
+  chargerPrice: [Float!]!
+
+  city: String!
+  state: String!
+
+  status: String
+}
+type StationOwnerListItem {
+  id: ID!
+  displayId: String!
+  ownerName: String!
+
+  stationCount: Int!
+  acChargerCount: Int!
+  dcChargerCount: Int!
+
+  ownerships: [String!]!
+  city: String!
+  state: String!
+  profileStatus: OwnerProfileStatus!
+}
+type StationOwnerListResponse {
+  owners: [StationOwnerListItem!]!
+  totalCount: Int!
+}
+
+type StationOwnerKpiMetric {
+  value: Float!
+  percentageChange: Float!
+  isIncrease: Boolean!
+  comparisonPeriod: StationOwnerKpiComparisonPeriod!
+}
+
+enum StationOwnerKpiComparisonPeriod {
+  LAST_MONTH
+  IN_MAINTENANCE
+  VS_YESTERDAY
+  THIS_WEEK
+}
+
+type StationOwnerKpiStats {
+  totalOwners: StationOwnerKpiMetric!
+  totalChargingStations: StationOwnerKpiMetric!
+  maintenanceStations: Int!
+  activeOwners: StationOwnerKpiMetric!
+  totalEnergyDelivered: StationOwnerKpiMetric!
+}
+
+input OwnerDateFilterInput {
+  period: OwnerDatePeriod
+  startDate: DateTime
+  endDate: DateTime
+}

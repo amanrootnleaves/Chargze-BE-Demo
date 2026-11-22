@@ -1,0 +1,35 @@
+#
+# GRAPH
+#
+type FolderAccountCount {
+  Account: Int
+}
+type FolderAccount {
+  id: ID,
+  createdAt: DateTime,
+  updatedAt: DateTime,
+  displayName: String,
+  isDeleted: Boolean,
+  Account: [Account],
+  Company: Company,
+  message: String,
+  status: String,
+  _totalCount: Int,
+  _count: FolderAccountCount
+}
+
+
+#
+# RESOLVER
+#
+extend type Mutation {
+  FolderAccountUpsert(folderAccountId: ID, displayName: String): FolderAccount! @isAuthenticated(accountType: [COMPANY]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  FolderAccountConnect(folderAccountId: ID!, accountIds: [ID!]!): [FolderAccount!]! @isAuthenticated(accountType: [COMPANY]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  FolderAccountDisconnect(folderAccountId: ID!, accountIds: [ID!]!): [FolderAccount!]! @isAuthenticated(accountType: [COMPANY]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  FolderAccountDelete(folderAccountId: ID!): FolderAccount! @isAuthenticated(accountType: [COMPANY]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+extend type Query {
+  FolderAccountRead(folderAccountToSearch: String, filter: JSON, sort: JSON, take: PositiveInt, skip: Int): [FolderAccount!]! @isAuthenticated(accountType: [COMPANY])
+  FolderAccountEmployeeRead(folderAccountId: ID!, filter: JSON, sort: JSON, accountNameToSearch: String, take: PositiveInt, skip: Int): FolderAccount! @isAuthenticated(accountType: [COMPANY])
+  FolderAccountReadUnique(folderAccountId: ID!): FolderAccount! @isAuthenticated(accountType: [COMPANY])
+}

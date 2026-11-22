@@ -1,0 +1,33 @@
+#
+# GRAPH
+#
+type SystemInformation {
+  id: ID,
+  createdAt: DateTime,
+  updatedAt: DateTime,
+  operatingSystem: String,
+  release: String,
+  cpuArchitecture: String,
+  totalMemory: Float,
+  freeMemory: Float,
+  uptime: PositiveInt,
+  user: JSONObject
+  cpu: JSONObject,
+  diskLayout: [JSONObject],
+  fsSize: [JSONObject],
+  memory: JSONObject,
+  currentLoad: JSONObject,
+  message: String,
+  status: String
+}
+
+
+#
+# RESOLVER
+#
+extend type Query {
+  SystemInformationReadUnique: SystemInformation! @isAuthenticated
+}
+extend type Subscription {
+  SystemInformationRead: SystemInformation!
+}

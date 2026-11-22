@@ -1,0 +1,20 @@
+{
+  "name": "cron",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "author": "development@rootandleaves.com",
+  "license": "ISC",
+  "description": "",
+  "scripts": {
+    "clean": "rimraf node_modules pnpm-lock.yaml",
+    "upgrade": "ncu -u",
+    "build::js": "babel ./ --out-dir ../../.build/packages/cron/ --no-copy-ignored --root-mode upward",
+    "prebuild": "pnpm run clean",
+    "build": "pnpm run build::js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.18.0",
+    "debug": "^4.3.4"
+  }
+}

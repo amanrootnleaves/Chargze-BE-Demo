@@ -1,0 +1,40 @@
+type CustomerVehicle {
+  id: ID!
+  brand: String!
+  model: String!
+  chargerType: String!
+  vehicleNumber: String!
+}
+
+input CreateCustomerVehicleInput {
+  brand: String!
+  model: String!
+  chargerType: String!
+  vehicleNumber: String!
+}
+type RemoveCustomerVehicleResponse {
+  id: ID!
+  isDeleted: Boolean!
+}
+type VehicleModel {
+  id: ID!
+  brand: String!
+  model: String!
+  chargerType: String!
+}
+extend type Mutation {
+  AddCustomerVehicle(input: CreateCustomerVehicleInput!): CustomerVehicle!
+    @isAuthenticated(accountType: [CUSTOMER, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  RemoveCustomerVehicle(id: ID!): RemoveCustomerVehicleResponse!
+    @isAuthenticated(accountType: [CUSTOMER, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+extend type Query {
+  ReadCustomerVehicle: [CustomerVehicle!]!
+    @isAuthenticated(accountType: [CUSTOMER, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  ReadVehicleModels(brand: String, searchText: String): [VehicleModel!]!
+}

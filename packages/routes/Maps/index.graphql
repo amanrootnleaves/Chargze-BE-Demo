@@ -1,0 +1,43 @@
+type MapsPrediction {
+  placeId: String!
+  primary: String!
+  secondary: String
+}
+
+type MapsCoords {
+  latitude: Float!
+  longitude: Float!
+}
+
+type MapsTrip {
+  """Encoded overview polyline — the client decodes it to draw the route."""
+  polyline: String!
+  distanceText: String!
+  durationText: String!
+  """Roads the route follows, e.g. "NE3, NH334"."""
+  via: String!
+  northeast: MapsCoords
+  southwest: MapsCoords
+}
+
+extend type Query {
+  """Place suggestions for a destination search box."""
+  mapsAutocomplete(input: String!): [MapsPrediction!]!
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  """Resolves a place id from mapsAutocomplete into coordinates."""
+  mapsPlaceCoords(placeId: String!): MapsCoords
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  """Human readable address for a coordinate pair."""
+  mapsReverseGeocode(latitude: Float!, longitude: Float!): String
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  """Driving route between two points."""
+  mapsDirections(
+    originLatitude: Float!
+    originLongitude: Float!
+    destinationLatitude: Float!
+    destinationLongitude: Float!
+  ): MapsTrip @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}

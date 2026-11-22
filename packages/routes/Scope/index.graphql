@@ -1,0 +1,71 @@
+#
+# GRAPH
+#
+type Scope {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  displayName: String
+  description: String
+  role: JSON
+  feature: JSON
+  isAllowedToCreate: Boolean
+  isAllowedToUpdate: Boolean
+  isAllowedToDelete: Boolean
+  isAllowedToRead: Boolean
+  Account: [Account]
+  Company: Company
+  Feature: Feature
+  message: String
+  status: String
+  _totalCount: Int
+}
+
+#
+# RESOLVER
+#
+extend type Mutation {
+  ScopeCreate(
+    displayName: String!
+    description: String
+    feature: JSON
+    role: JSON
+    isAllowedToCreate: Boolean
+    isAllowedToUpdate: Boolean
+    isAllowedToDelete: Boolean
+    isAllowedToRead: Boolean
+  ): Scope!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  ScopeUpdate(
+    scopeId: ID!
+    displayName: String!
+    description: String
+    feature: JSON
+    role: JSON
+    isAllowedToCreate: Boolean
+    isAllowedToUpdate: Boolean
+    isAllowedToDelete: Boolean
+    isAllowedToRead: Boolean
+  ): Scope!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  ScopeDelete(scopeId: ID!): Scope!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+extend type Query {
+  ScopeRead(
+    scopeId: ID
+    displayNameToSearch: String
+    sort: JSON
+    filter: JSON
+    take: PositiveInt
+    skip: Int
+  ): [Scope!]!
+    @isAuthenticated(accountType: [COMPANY, ADMIN, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  ScopePermission(featureId: ID!): Scope!
+    @isAuthenticated(accountType: [EMPLOYEE, VENDOR, COMPANY])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}

@@ -1,0 +1,16 @@
+enum DATE_PERIOD {
+  TODAY
+  WEEK
+  MONTH
+  HALF_YEAR
+  YEAR
+}
+enum INVOICE_STATUS {
+  PAID
+  PENDING
+  OVERDUE
+}
+enum EXPORT_FORMAT {
+  EXCEL
+  PDF
+}

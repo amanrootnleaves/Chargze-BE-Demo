@@ -1,0 +1,5 @@
+{
+  "COMPANY_NOT_FOUND": "Company not found for given accountId.",
+  "ACCOUNT_NOT_FOUND": "Failed to find account for given accountId.",
+  "PARENT_ACCOUNT_NOT_FOUND": "Failed to find parent account of this account."
+}

@@ -1,0 +1,129 @@
+#
+# GRAPH
+#
+type Order {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  isDeleted: Boolean
+  orderCode: String
+  status: String
+  totalAmount: Float
+  currency: String
+  orderedAt: DateTime
+  cancelledAt: DateTime
+  deliveredAt: DateTime
+  CustomerProfile: CustomerProfile
+  Items: [OrderItem]
+  Payment: OrderPayment
+  _totalCount: Int
+  message: String
+  statusMsg: String
+}
+
+type OrderPayment {
+  id: ID
+  status: String
+  method: String
+  amount: Float
+  transactionId: String
+  paidAt: DateTime
+}
+
+type OrderItem {
+  id: ID
+  quantity: Int
+  unitPrice: Float
+  subtotal: Float
+  ProductName: String
+  ProductSku: String
+  ProductImage: JSON
+}
+
+type OrderStats {
+  totalOrders: Int
+  newOrders: Int
+  completedOrders: Int
+  canceledOrders: Int
+  totalOrders7Days: Int
+  newOrders7Days: Int
+  completedOrders7Days: Int
+  canceledOrders7Days: Int
+  totalOrdersPercentage: Float
+  newOrdersPercentage: Float
+  completedOrdersPercentage: Float
+  canceledOrdersPercentage: Float
+  totalSales: Float
+  totalSalesPercentage: Float
+}
+
+type OrderActionResponse {
+  statusMsg: String
+  message: String
+}
+
+#
+# RESOLVER
+#
+extend type Query {
+  OrderRead(
+    orderId: ID
+    orderCode: String
+    status: String
+    take: PositiveInt
+    skip: Int
+  ): [Order!]!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE, CUSTOMER])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  OrderStats: OrderStats!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+
+extend type Mutation {
+  OrderCreate(
+    orderCode: String
+    status: String
+    totalAmount: Float!
+    currency: String
+    items: [JSON]!
+    payment: JSON
+    companyId: ID
+    customerProfileId: ID
+  ): Order!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  InitiateRazorpayOrder(
+    totalAmount: Float!
+    currency: String
+    items: [JSON]!
+  ): JSON!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE, CUSTOMER])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  VerifyRazorpayPayment(
+    razorpayOrderId: String!
+    razorpayPaymentId: String!
+    razorpaySignature: String!
+    orderId: ID!
+  ): JSON!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE, CUSTOMER])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  OrderUpdate(
+    id: ID!
+    status: String
+    totalAmount: Float
+    currency: String
+    items: [JSON]
+    payment: JSON
+  ): Order!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  OrderDelete(orderIds: [ID!]!): OrderActionResponse!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}

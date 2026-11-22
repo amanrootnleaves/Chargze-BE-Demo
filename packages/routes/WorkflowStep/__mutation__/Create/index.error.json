@@ -1,0 +1,4 @@
+{
+  "WORKFLOW_NOT_FOUND": "Workflow not found",
+  "WORKFLOW_STEPS_CREATE_FAILED": "Failed to create workflow steps."
+}

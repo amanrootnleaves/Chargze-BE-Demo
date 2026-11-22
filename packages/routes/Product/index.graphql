@@ -1,0 +1,132 @@
+#
+# GRAPH
+#
+type Product {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  isDeleted: Boolean
+  productName: String
+  description: String
+  mainCategory: String
+  subCategory: String
+  childCategory: String
+  vehicleType: String
+  fuelType: String
+  brand: String
+  model: String
+  partCode: String
+  hsnCode: String
+  oemPartCode: String
+  mrp: Float
+  taxPercent: Float
+  quantity: Int
+  b2cSale: Boolean
+  b2cRecommended: Boolean
+  b2cTrending: Boolean
+  b2bSale: Boolean
+  b2bRecommended: Boolean
+  b2bTrending: Boolean
+  compactable: [String]
+  images: JSON
+  salePrice: Float
+  discountPercent: Float
+  maxQuantityOrder: Int
+  features: JSON
+  shopWithConfidence: [String]
+  rating: Float
+  totalReviews: Int
+  Company: Company
+  _totalCount: Int
+  message: String
+  statusMsg: String
+}
+
+type Review {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  rating: Int
+  comment: String
+  images: JSON
+  Product: Product
+  CustomerProfile: CustomerProfile
+  message: String
+  statusMsg: String
+}
+
+#
+
+# RESOLVER
+#
+extend type Query {
+  ProductRead(
+    productId: ID
+    productName: String
+    brand: String
+    mainCategory: String
+    searchText: String
+    take: PositiveInt
+    skip: Int
+  ): [Product!]!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE, CUSTOMER])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  ProductDetailsRead(productId: ID!): Product!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE, CUSTOMER])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  ReviewRead(
+    productId: ID!
+    take: PositiveInt
+    skip: Int
+  ): [Review!]!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE, CUSTOMER])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+
+extend type Mutation {
+  ProductCreate(
+    productName: String!
+    description: String
+    mainCategory: String
+    subCategory: String
+    childCategory: String
+    vehicleType: String
+    fuelType: String
+    brand: String
+    model: String
+    partCode: String
+    hsnCode: String
+    oemPartCode: String
+    mrp: Float!
+    taxPercent: Float
+    quantity: Int!
+    b2cSale: Boolean
+    b2cRecommended: Boolean
+    b2cTrending: Boolean
+    b2bSale: Boolean
+    b2bRecommended: Boolean
+    b2bTrending: Boolean
+    compactable: [String]
+    images: JSON
+    salePrice: Float
+    discountPercent: Float
+    maxQuantityOrder: Int
+    features: JSON
+    shopWithConfidence: [String]
+    companyId: ID
+  ): Product!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  ReviewCreate(
+    productId: ID!
+    rating: Int!
+    comment: String
+    images: JSON
+  ): Review!
+    @isAuthenticated(accountType: [CUSTOMER, ADMIN, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  ProductDelete(productIds: [ID!]!): Product
+    @isAuthenticated(accountType: [ADMIN, COMPANY])
+}

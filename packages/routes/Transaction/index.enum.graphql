@@ -1,0 +1,18 @@
+ # -------------------------------------------------------------
+# Enums
+# -------------------------------------------------------------
+
+enum TRANSACTION_STATUS {
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+enum TRANSACTION_DATE_PERIOD {
+  TODAY
+  WEEK
+  MONTH
+  HALF_YEAR
+  YEAR
+}

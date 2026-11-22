@@ -1,0 +1,47 @@
+#
+# GRAPH
+#
+type WorkflowStep {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  nodeColor: String
+  conditions: JSON
+  role: JSON
+  position: JSON
+  data: JSON
+  style: JSON
+  Workflow: Workflow
+  message: String
+  status: String
+  _totalCount: Int
+}
+
+
+#
+# RESOLVER
+#
+extend type Mutation {
+  WorkflowStepCreate(
+    workflowId: ID!,
+    workflowStepId: ID!,
+    position: JSON!,
+    data: JSON!,
+    style: JSON!
+  ): WorkflowStep! @isAuthenticated(accountType: [ADMIN, COMPANY]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  WorkflowStepUpdate(
+    workflowStepId: ID!
+    nodeColor: String
+    conditions: JSON
+    role: JSON
+  ): WorkflowStep! @isAuthenticated(accountType: [ADMIN, COMPANY]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  WorkflowStepDelete(workflowStepId: ID!): WorkflowStep! @isAuthenticated(accountType: [ADMIN, COMPANY]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+extend type Query {
+  WorkflowStepRead(
+    workflowStepId: ID
+    workflowId: ID
+ ): [WorkflowStep!]!
+  @isAuthenticated
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}

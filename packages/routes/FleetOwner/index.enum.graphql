@@ -1,0 +1,26 @@
+ 
+enum FleetStatus {
+  ONBOARDED
+  LIVE
+  ON_HOLD
+  CLOSED
+}
+
+ 
+enum PaymentTerms {
+  PREPAID
+  POSTPAID
+}
+
+ 
+enum EntityType {
+  PROPRIETORSHIP
+  PARTNERSHIP
+  LLP
+  PRIVATE_LIMITED
+  PUBLIC_LIMITED
+}
+enum RfidTagType {
+  PARENT
+  CHILD
+}

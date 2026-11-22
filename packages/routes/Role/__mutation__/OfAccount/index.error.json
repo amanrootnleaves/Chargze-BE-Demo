@@ -1,0 +1,5 @@
+{
+  "FAILED_TO_FIND_ACCOUNT": "Are you sure given account exists. Failed to find one.",
+  "EXPECTED_ROLE_TO_EXIST": "Are you sure given role exists. Failed to find one.",
+  "REQUIRE_ACCOUNT_ID_OR_ACCOUNT_IDS": "Please provide either accountId or accountIds."
+}

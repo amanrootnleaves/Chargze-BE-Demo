@@ -1,0 +1,8 @@
+{
+  "FAILED_TO_AGGREGATE": "Failed to aggregate feature details.",
+  "FEATURE_NOT_FOUND": "Feature not found.",
+  "FAILED_TO_GENERATE_TYPE": "Failed to generate types",
+  "UNEXPECTED_QUERY_BUILD_FAILED": "Unexpected query build failed",
+  "COMPANY_NOT_FOUND": "Company not found",
+  "EXPECTED_SELECT_CLAUSES": "Expected select clauses."
+}

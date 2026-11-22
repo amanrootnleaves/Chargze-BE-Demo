@@ -1,0 +1,282 @@
+# -------------------------------------------------------------
+# Types
+# -------------------------------------------------------------
+
+type FleetOwner {
+  id: ID!
+  fleetId: String!
+  ownerName: String!
+  status: FleetStatus!
+  onboardingDate: DateTime!
+  closedDate: DateTime
+
+  # Point of Contact (POC)
+  poc: String!
+  email: EmailAddress!
+  mobileNo: PhoneNumber!
+
+  # Address Details
+  addressLine1: String!
+  addressLine2: String
+  pincode: PostalCode!
+  city: String!
+  state: String!
+
+  # Commercial & Terms
+  paymentTerms: PaymentTerms!
+  payoutDay: String
+
+  # Legal Details
+  entityName: String
+  entityType: EntityType!
+  gstNumber: String!
+  gstDocUrl: URL
+  agreementDocUrl: URL
+
+  # Relational Fields
+  rfidTags: [RfidTag!]
+
+  # Metadata
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  isDeleted: Boolean!
+}
+type FleetOwnersKPIsResponse {
+  totalFleetCustomers: FleetOwnerKpiMetric!
+  totalHubs: FleetOwnerKpiMetric!
+  totalTransactions: FleetOwnerKpiMetric!
+  totalRevenue: FleetOwnerKpiMetric!
+  totalEnergyDelivered: FleetOwnerKpiMetric!
+}
+
+type FleetOwnerKpiMetric {
+  value: Float!
+  percentageChange: Float!
+  comparisonPeriod: FleetOwnerKpiComparisonPeriod!
+}
+
+enum FleetOwnerKpiComparisonPeriod {
+  LAST_MONTH
+  IN_MAINTENANCE
+  VS_YESTERDAY
+  THIS_WEEK
+}
+
+# Child/Nested Row: Hub ki details
+type DashboardHub {
+  id: ID!
+  city: String
+  hubName: String
+  hubStationCount: Int # Table column: Hub/Station
+  chargingPointCount: Int # Table column: Charging Point
+  accessType: String # Table column: Access Type (e.g., Fleet Reserved, Public)
+  rfidCount: Int # Table column: RFID
+  rfids: [FleetHubRfidItem!]! # <-- Station level mapped RFIDs ka complete data
+}
+type FleetHubRfidItem {
+  id: ID!
+  tagId: String
+  tagType: String
+  reserveAmount: Float
+  balanceAmount: Float
+}
+# Parent Row: Fleet Owner ki details jisme Hubs ka array hoga
+type DashboardFleetOwner {
+  id: ID!
+  fleetId: String! # The "001", "002" ID shown in Figma
+  fleetOwnerName: String!
+  totalChargingPoints: Int # Overall count for this fleet owner
+  totalActiveRfids: Int # Overall active RFIDs for this fleet owner
+  hubs: [DashboardHub!]! # Nested array of hubs/stations
+}
+
+# Single Connector Item (Raw fields for badge / edit modal)
+type ConnectedConnectorItem {
+  id: ID!
+  name: String # "Gun 1"
+  chargingType: String # "DC" / "AC"
+  connectorType: String # "CCS2", "TYPE_2"
+  chargerId: ID
+  chargerCode: String # "0023" / "DC01"
+  customPrice: Float
+}
+
+# Single Station Item for an RFID
+type ConnectedStationItem {
+  id: ID!
+  stationName: String!
+  stationCode: String # DB ka stationId e.g. "H01"
+  city: String
+  connectors: [ConnectedConnectorItem!]!
+}
+
+# RFID Row Item
+type FleetRfidDetailItem {
+  id: ID!
+  tagId: String
+  tagType: RfidTagType!
+  balanceAmount: Float
+  reserveAmount: Float
+  inTransaction: Boolean!
+  isBlocked: Boolean!
+  expiryDate: DateTime
+  parentId: ID
+  children: [FleetRfidDetailItem!]
+  connectedStations: [ConnectedStationItem!]! # Each RFID tag connects to 1 Station
+}
+# -------------------------------------------------------------
+# Fleet Owner Details Response & Child Types
+# -------------------------------------------------------------
+
+type FleetBusinessProfile {
+  ownerName: String!
+  status: FleetStatus!
+  paymentTerms: PaymentTerms!
+  onboardingDate: DateTime!
+  closedDate: DateTime
+  pocName: String!
+  email: EmailAddress!
+  mobileNumber: PhoneNumber!
+  addressLine1: String!
+  addressLine2: String
+  pincode: PostalCode!
+  city: String!
+  state: String!
+  payoutDay: String
+}
+
+type FleetLegalDetails {
+  entityName: String
+  entityType: EntityType
+  gstNumber: String!
+  gstDocUrl: URL
+  agreementDocUrl: URL
+}
+
+type FleetOwnerDetailsResponse {
+  id: ID!
+  fleetId: String!
+  businessProfile: FleetBusinessProfile!
+  legalDetails: FleetLegalDetails!
+  rfidDetails: [FleetRfidDetailItem!]!
+}
+
+# Pagination Wrapper
+type PaginatedFleetOwners {
+  nodes: [DashboardFleetOwner!]!
+  totalCount: Int! # Total database count matching the filter (for frontend pagination UI)
+  page: Int!
+  limit: Int!
+}
+
+# -------------------------------------------------------------
+# Inputs
+# -------------------------------------------------------------
+
+input CreateFleetOwnerInput {
+  fleetId: String
+  ownerName: String!
+  status: FleetStatus = LIVE
+  onboardingDate: DateTime!
+  closedDate: DateTime
+
+  # Point of Contact (POC)
+  poc: String!
+  email: EmailAddress!
+  mobileNo: PhoneNumber!
+
+  # Address Details
+  addressLine1: String!
+  addressLine2: String
+  pincode: PostalCode!
+  city: String!
+  state: String!
+
+  # Commercial & Terms
+  paymentTerms: PaymentTerms = PREPAID
+  payoutDay: String
+
+  # Legal Details
+  entityName: String
+  entityType: EntityType = FLEET_RESERVED
+  gstNumber: String!
+  gstDocUrl: URL
+  agreementDocUrl: URL
+}
+
+input FleetOwnerFiltersInput {
+  search: String # For "Search Owner by Name, ID, Location etc."
+  fleetOwner: String # Top dropdown: Fleet Owner (ID, fleetId, ya name)
+  chargingHub: String # Top dropdown: Charging Hub
+  ownership: String # Top dropdown: Ownership
+  accessType: String # Top dropdown: Access Type
+  status: String # Top dropdown: Status
+  dateFilter: DateFilterInput
+}
+
+input UpdateFleetOwnerProfileInput {
+  # Business Profile Fields
+  ownerName: String
+  status: FleetStatus
+  onboardingDate: DateTime
+  closedDate: DateTime
+
+  # Point of Contact (POC)
+  poc: String
+  email: EmailAddress
+  mobileNo: PhoneNumber
+
+  # Address Details
+  addressLine1: String
+  addressLine2: String
+  pincode: PostalCode
+  city: String
+  state: String
+
+  # Commercial & Terms
+  paymentTerms: PaymentTerms
+  payoutDay: String
+
+  # Legal Details
+  entityName: String
+  entityType: EntityType
+  gstNumber: String
+  gstDocUrl: URL
+  agreementDocUrl: URL
+}
+# -------------------------------------------------------------
+# Queries & Mutations
+# -------------------------------------------------------------
+
+extend type Query {
+  GetFleetOwnersKPIs: FleetOwnersKPIsResponse!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  GetFleetOwners(
+    page: Int = 1
+    limit: Int = 10
+    filters: FleetOwnerFiltersInput
+  ): PaginatedFleetOwners!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  ExportFleetOwners(
+    format: EXPORT_FORMAT!
+    filters: FleetOwnerFiltersInput
+  ): ExportResponse!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  GetFleetOwnerDetails(id: ID!): FleetOwnerDetailsResponse!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+extend type Mutation {
+  CreateFleetOwner(input: CreateFleetOwnerInput!): FleetOwner!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  UpdateFleetOwnerProfile(
+    id: ID!
+    input: UpdateFleetOwnerProfileInput!
+  ): FleetOwner!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}

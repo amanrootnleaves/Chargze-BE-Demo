@@ -1,0 +1,177 @@
+#
+# GRAPH
+#
+type Account {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  isActive: Boolean
+  fullName: String
+  isBlocked: Boolean
+  thumbnailStoredAt: JSON
+  email: String
+  emailVerified: Boolean
+  address: String
+  Role: [Role]
+  displayName: String
+  token: String
+  phoneNumber: String
+  Company: [Company]
+  Gst: [Gst]
+  accountType: ACCOUNT_TYPE
+  dateOfBirth: DateTime
+  gender: String
+  ProjectEmployee: [ProjectEmployee]
+  ParentAccount: Account
+  message: String
+  status: String
+  _totalCount: Int
+}
+
+input ChangePasswordInput {
+  currentPassword: String!
+  newPassword: String!
+}
+input VerifyPasswordInput {
+  password: String!
+}
+type TwoFactorStatusResponse {
+  isEnabled: Boolean!
+}
+type ChangePasswordResponse {
+  success: Boolean!
+  message: String!
+}
+#
+# RESOLVER
+#
+extend type Mutation {
+  changePassword(input: ChangePasswordInput!): ChangePasswordResponse!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  enableTwoFactor(input: VerifyPasswordInput!): ChangePasswordResponse!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  disableTwoFactor(input: VerifyPasswordInput!): ChangePasswordResponse!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  AccountLoginWithEmail(email: EmailAddress!, password: String!): Account!
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  AccountRegisterWithEmail(
+    email: EmailAddress!
+    password: String!
+    displayName: String!
+    fullName: String
+    accountType: ACCOUNT_TYPE
+    phoneNumber: String
+    thumbnailStoredAt: Image
+    gstDisplayName: String
+    gstDescription: String
+    gstState: JSON
+    gstCountry: JSON
+    publicKey: String
+  ): Account! @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  AccountIsBlockedWithEmailOrAccountId(
+    accountId: ID
+    email: EmailAddress
+    isBlocked: Boolean!
+  ): Account!
+    @isAuthenticated(accountType: [COMPANY, ADMIN, VENDOR])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  AccountSetting(
+    accountId: ID
+    password: String
+    displayName: String
+    fullName: String
+    bio: String
+    email: EmailAddress
+    website: URL
+    isBlocked: Boolean
+    accountType: ACCOUNT_TYPE
+    is2FAEnabled: Boolean
+    phoneNumber: String
+    thumbnailStoredAt: Image
+    gstDisplayName: String
+    gstDescription: String
+    gstState: JSON
+    gstCountry: JSON
+    dateOfBirth: DateTime
+    gender: String
+  ): Account!
+    @isAuthenticated(accountType: [COMPANY, ADMIN, EMPLOYEE, VENDOR])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  AccountUpload(
+    accountId: ID!
+    thumbnailStoredAt: Image
+    profileCoverThumbnailStoredAt: Image
+    dimensionsToChopIn: JSON
+  ): Account!
+    @isAuthenticated(accountType: [COMPANY, ADMIN, VENDOR])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  AccountLogout(accountId: ID!): Account!
+    @isAuthenticated
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  AccountDelete(accountId: ID!): Account!
+    @isAuthenticated(accountType: [COMPANY, ADMIN, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  AccountIsActive(accountId: ID, isActive: Boolean): Account!
+    @isAuthenticated
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  AccountForgotPasswordWithEmail(
+    email: EmailAddress!
+    password: String!
+  ): Account! @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  AccountVerifyEmail(token: String!): Account!
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  AccountSendOTP(phoneNumber: String!): JSON!
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  AccountResendOTP(phoneNumber: String!): JSON!
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  AccountVerifyOTP(
+    phoneNumber: String!
+    otp: String!
+    publicKey: String
+  ): Account! @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  AccountUpdateAddress(accountId: ID, address: String!): Account!
+    @isAuthenticated(accountType: [CUSTOMER, COMPANY, ADMIN, EMPLOYEE, VENDOR])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+extend type Query {
+
+  AccountRead(
+    accountType: ACCOUNT_TYPE
+    accountId: ID
+    emailId: EmailAddress
+    filter: JSON
+    sort: JSON
+    take: PositiveInt
+    skip: Int
+    search: String
+  ): [Account!]!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN, VENDOR])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  AccountScope(take: PositiveInt, skip: Int): Account!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN, VENDOR])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  AccountSearch(
+    search: String
+    searches: [String]
+    take: PositiveInt
+    skip: Int
+  ): [Account!]!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN, VENDOR])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+    getTwoFactorStatus: TwoFactorStatusResponse!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN, VENDOR])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+}
+extend type Subscription {
+  AccountRead: Account!
+    @isAuthenticated(accountType: [COMPANY, ADMIN, VENDOR])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+}

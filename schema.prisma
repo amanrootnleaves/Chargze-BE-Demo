@@ -1,0 +1,1468 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["nativeDistinct", "relationJoins"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_POSTGRES_WRITE_URL")
+}
+
+model Account {
+  id                         String                       @id @unique @default(cuid())
+  createdAt                  DateTime                     @default(now()) @db.Timestamp(6)
+  updatedAt                  DateTime                     @default(now()) @updatedAt @db.Timestamp(6)
+  isActive                   Boolean                      @default(false)
+  fullName                   String?
+  password                   String?
+  isBlocked                  Boolean                      @default(false)
+  thumbnailStoredAt          Json?                        @db.Json
+  email                      String?                      @unique(map: "email_1676392778723_index")
+  emailVerified              Boolean                      @default(false)
+  verificationToken          String?
+  verificationTokenExpiry    DateTime?
+  address                    String?
+  displayName                String?
+  isDeleted                  Boolean?                     @default(false)
+  phoneNumber                String?
+  accountType                ACCOUNT_TYPE                 @default(EMPLOYEE)
+  adminRole                  ADMIN_ROLE?
+  is2FAEnabled               Boolean?  @default(false)
+  twoFactorSecret            String?
+  status                     ACCOUNT_STATUS               @default(INVITED)
+  AccountStationAccess       AccountStationAccess[]
+  ParentAccount__fk__        String?
+  publicKey                  String?
+  dateOfBirth                DateTime?
+  gender                     String?
+  ParentAccount              Account?                     @relation("AccountToChildren", fields: [ParentAccount__fk__], references: [id])
+  ChildrenAccounts           Account[]                    @relation("AccountToChildren")
+  Company                    Company[]
+  CompanyFeatureEntry        CompanyFeatureEntry[]
+  CompanyFeatureEntryHistory CompanyFeatureEntryHistory[]
+  CustomerProfiles           CustomerProfile?
+  DynamicColumn              DynamicColumn[]
+  Feature                    Feature[]
+  Gst                        Gst[]
+  Invitations                Invitation[]                 @relation("InvitedBy")
+  Project                    Project[]
+  Scope                      Scope[]
+  Workflow                   Workflow[]                   @relation("WorkflowOwner")
+  FolderAccount              FolderAccount[]              @relation("AccountToFolderAccount")
+  ProjectEmployee            ProjectEmployee[]            @relation("AccountToProjectEmployee")
+  Role                       Role[]                       @relation("AccountToRole")
+  ReferralCampaigns          ReferralCampaign[]
+}
+
+model DynamicColumn {
+  id            String   @id @unique @default(cuid())
+  createdAt     DateTime @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted     Boolean? @default(false)
+  fields        Json?
+  Feature__fk__ String?
+  Company__fk__ String?
+  Account__fk__ String?
+  Account       Account? @relation(fields: [Account__fk__], references: [id])
+  Company       Company? @relation(fields: [Company__fk__], references: [id])
+  Feature       Feature? @relation(fields: [Feature__fk__], references: [id])
+}
+
+model Company {
+  id                  String                @id @unique @default(cuid())
+  createdAt           DateTime              @default(now()) @db.Timestamp(6)
+  updatedAt           DateTime              @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted           Boolean?              @default(false)
+  displayName         String?
+  address             String?
+  phoneNumber         String?
+  Account__fk__       String?
+  ChargingStations    ChargingStation[]
+  Account             Account?              @relation(fields: [Account__fk__], references: [id])
+  CompanyFeatureEntry CompanyFeatureEntry[]
+  CustomerProfiles    CustomerProfile[]
+  DynamicColumn       DynamicColumn[]
+  ElectricVehicles    ElectricVehicle[]
+  FolderAccount       FolderAccount[]
+  Gst                 Gst[]
+  Orders              Order[]
+  PartsCategories     PartsCategory[]
+  Products            Product[]
+  Project             Project[]
+  Role                Role[]
+  Scope               Scope[]
+  Transaction         Transaction[]
+  VehiclesCategories  VehiclesCategory[]
+  Workflow            Workflow[]
+}
+
+model CompanyFeatureEntry {
+  id                         String                       @id @unique @default(cuid())
+  createdAt                  DateTime                     @default(now()) @db.Timestamp(6)
+  updatedAt                  DateTime                     @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted                  Boolean?                     @default(false)
+  data                       Json?
+  Feature__fk__              String?
+  Company__fk__              String?
+  Account__fk__              String?
+  Project__fk__              String?
+  Account                    Account?                     @relation(fields: [Account__fk__], references: [id])
+  Company                    Company?                     @relation(fields: [Company__fk__], references: [id])
+  Feature                    Feature?                     @relation(fields: [Feature__fk__], references: [id])
+  Project                    Project?                     @relation(fields: [Project__fk__], references: [id])
+  CompanyFeatureEntryHistory CompanyFeatureEntryHistory[]
+}
+
+model CompanyFeatureEntryHistory {
+  id                        String               @id @unique @default(cuid())
+  createdAt                 DateTime             @default(now()) @db.Timestamp(6)
+  updatedAt                 DateTime             @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted                 Boolean?             @default(false)
+  fromData                  Json?
+  toData                    Json?
+  CompanyFeatureEntry__fk__ String?
+  ChangedByAccount__fk__    String?
+  ChangedByAccount          Account?             @relation(fields: [ChangedByAccount__fk__], references: [id])
+  CompanyFeatureEntry       CompanyFeatureEntry? @relation(fields: [CompanyFeatureEntry__fk__], references: [id])
+}
+
+model Order {
+  id                    String           @id @unique @default(cuid())
+  createdAt             DateTime         @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime         @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted             Boolean?         @default(false)
+  orderCode             String           @unique
+  status                ORDER_STATUS     @default(PENDING)
+  totalAmount           Decimal          @db.Decimal(12, 2)
+  currency              String           @default("USD")
+  orderedAt             DateTime         @default(now())
+  cancelledAt           DateTime?
+  deliveredAt           DateTime?
+  CustomerProfile__fk__ String?
+  Company__fk__         String?
+  Company               Company?         @relation(fields: [Company__fk__], references: [id])
+  CustomerProfile       CustomerProfile? @relation(fields: [CustomerProfile__fk__], references: [id])
+  Items                 OrderItem[]
+  Payment               OrderPayment?
+  Transactions          Transaction[]
+
+  @@index([CustomerProfile__fk__])
+  @@index([Company__fk__])
+  @@index([status])
+  @@index([orderedAt])
+}
+
+model OrderItem {
+  id           String   @id @unique @default(cuid())
+  createdAt    DateTime @default(now()) @db.Timestamp(6)
+  updatedAt    DateTime @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted    Boolean? @default(false)
+  quantity     Int      @default(1)
+  unitPrice    Decimal  @db.Decimal(12, 2)
+  subtotal     Decimal  @db.Decimal(12, 2)
+  ProductName  String
+  ProductSku   String?
+  ProductImage Json
+  Order__fk__  String?
+  Order        Order?   @relation(fields: [Order__fk__], references: [id], onDelete: Cascade)
+
+  @@index([Order__fk__])
+}
+
+model OrderPayment {
+  id            String          @id @unique @default(cuid())
+  createdAt     DateTime        @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime        @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted     Boolean?        @default(false)
+  status        PAYMENT_STATUS  @default(UNPAID)
+  method        PAYMENT_METHOD?
+  transactionId String?
+  amount        Decimal         @db.Decimal(12, 2)
+  paidAt        DateTime?
+  Order__fk__   String?         @unique
+  Order         Order?          @relation(fields: [Order__fk__], references: [id], onDelete: Cascade)
+}
+
+model PartsCategory {
+  id                   String          @id @unique @default(cuid())
+  createdAt            DateTime        @default(now()) @db.Timestamp(6)
+  updatedAt            DateTime        @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted            Boolean?        @default(false)
+  name                 String
+  slug                 String
+  description          String?
+  iconStoredAt         Json?
+  imageStoredAt        Json?
+  isActive             Boolean         @default(true)
+  isFeatured           Boolean         @default(false)
+  sortOrder            Int?
+  Company__fk__        String?
+  ParentCategory__fk__ String?
+  Company              Company?        @relation(fields: [Company__fk__], references: [id])
+  ParentCategory       PartsCategory?  @relation("PartsCategoryHierarchy", fields: [ParentCategory__fk__], references: [id])
+  SubCategories        PartsCategory[] @relation("PartsCategoryHierarchy")
+
+  @@unique([slug, Company__fk__])
+  @@index([Company__fk__])
+  @@index([ParentCategory__fk__])
+  @@index([isActive])
+  @@index([isFeatured])
+}
+
+model VehiclesCategory {
+  id                   String             @id @unique @default(cuid())
+  createdAt            DateTime           @default(now()) @db.Timestamp(6)
+  updatedAt            DateTime           @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted            Boolean?           @default(false)
+  name                 String
+  slug                 String
+  description          String?
+  iconStoredAt         Json?
+  imageStoredAt        Json?
+  isActive             Boolean            @default(true)
+  isFeatured           Boolean            @default(false)
+  sortOrder            Int?
+  Company__fk__        String?
+  ParentCategory__fk__ String?
+  Company              Company?           @relation(fields: [Company__fk__], references: [id])
+  ParentCategory       VehiclesCategory?  @relation("VehiclesCategoryHierarchy", fields: [ParentCategory__fk__], references: [id])
+  SubCategories        VehiclesCategory[] @relation("VehiclesCategoryHierarchy")
+
+  @@unique([slug, Company__fk__])
+  @@index([Company__fk__])
+  @@index([ParentCategory__fk__])
+  @@index([isActive])
+  @@index([isFeatured])
+}
+
+model Transaction {
+  id                    String             @id @unique @default(cuid())
+  createdAt             DateTime           @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime           @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted             Boolean?           @default(false)
+  amount                Decimal            @db.Decimal(12, 2)
+  currency              String             @default("USD")
+  status                TRANSACTION_STATUS
+  type                  TRANSACTION_TYPE
+  gateway               PAYMENT_GATEWAY?
+  gatewayTxnId          String?            @unique
+  gatewayResponse       Json?
+  paidAt                DateTime?
+  failureReason         String?
+  Order__fk__           String?
+  Company__fk__         String?
+  CustomerProfile__fk__ String?
+  invoiceUrl            String?
+  refundAmount          Decimal?           @default(0) @db.Decimal(12, 2)
+  ChargingSession       ChargingSession?
+  balanceAmount         Float?             @default(0.0)
+  RfidTag__fk__         String?
+  RfidTag               RfidTag?           @relation(fields: [RfidTag__fk__], references: [id])
+  Company               Company?           @relation(fields: [Company__fk__], references: [id])
+  CustomerProfile       CustomerProfile?   @relation(fields: [CustomerProfile__fk__], references: [id])
+  Order                 Order?             @relation(fields: [Order__fk__], references: [id], onDelete: Cascade)
+  PromoCodeUsage        PromoCodeUsage[]
+
+  @@index([Order__fk__])
+  @@index([Company__fk__])
+  @@index([status])
+  @@index([gatewayTxnId])
+  @@index([createdAt])
+}
+
+model Project {
+  id                  String                @id @unique @default(cuid())
+  createdAt           DateTime              @default(now()) @db.Timestamp(6)
+  updatedAt           DateTime              @default(now()) @updatedAt @db.Timestamp(6)
+  displayName         String?
+  description         String?
+  account             Json?
+  isDeleted           Boolean?              @default(false)
+  Account__fk__       String?
+  Company__fk__       String?
+  CompanyFeatureEntry CompanyFeatureEntry[]
+  Feature             Feature[]
+  Account             Account?              @relation(fields: [Account__fk__], references: [id])
+  Company             Company?              @relation(fields: [Company__fk__], references: [id])
+  ProjectEmployee     ProjectEmployee[]
+  Workflow            Workflow[]
+}
+
+model Scope {
+  id                String    @id @unique @default(cuid())
+  createdAt         DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime  @default(now()) @updatedAt @db.Timestamp(6)
+  displayName       String?
+  description       String?
+  isDeleted         Boolean?  @default(false)
+  feature           Json?
+  role              Json?
+  isAllowedToCreate Boolean?
+  isAllowedToUpdate Boolean?
+  isAllowedToDelete Boolean?
+  isAllowedToRead   Boolean?
+  Company__fk__     String?
+  Account__fk__     String?
+  Feature           Feature[]
+  Role              Role[]
+  Account           Account?  @relation(fields: [Account__fk__], references: [id])
+  Company           Company?  @relation(fields: [Company__fk__], references: [id])
+}
+
+model Gst {
+  id            String    @id @unique @default(cuid())
+  createdAt     DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime  @default(now()) @updatedAt @db.Timestamp(6)
+  displayName   String?
+  description   String?
+  country       Json?     @db.Json
+  state         Json?     @db.Json
+  isDeleted     Boolean?  @default(false)
+  Company__fk__ String?
+  Account__fk__ String?
+  gstin         String?   @unique
+  features      Feature[]
+  Account       Account?  @relation(fields: [Account__fk__], references: [id])
+  Company       Company?  @relation(fields: [Company__fk__], references: [id])
+}
+
+model Feature {
+  id                  String                @id @unique @default(cuid())
+  createdAt           DateTime              @default(now()) @db.Timestamp(6)
+  updatedAt           DateTime              @default(now()) @updatedAt @db.Timestamp(6)
+  displayName         String?
+  description         String?
+  thumbnailStoredAt   Json?
+  isDeleted           Boolean?              @default(false)
+  fields              Json?
+  Project__fk__       String?
+  Account__fk__       String?
+  gstId               String?
+  Scope__fk__         String?
+  CompanyFeatureEntry CompanyFeatureEntry[]
+  DynamicColumn       DynamicColumn[]
+  Account             Account?              @relation(fields: [Account__fk__], references: [id])
+  Project             Project?              @relation(fields: [Project__fk__], references: [id])
+  Scope               Scope?                @relation(fields: [Scope__fk__], references: [id])
+  Gst                 Gst?                  @relation(fields: [gstId], references: [id])
+  Workflow            Workflow[]
+}
+
+model Workflow {
+  id                String         @id @unique @default(cuid())
+  createdAt         DateTime       @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime       @default(now()) @updatedAt @db.Timestamp(6)
+  displayName       String?
+  description       String?
+  thumbnailStoredAt Json?
+  edges             Json?
+  project           Json?
+  feature           Json?
+  isRequired        Boolean?       @default(false)
+  isDeleted         Boolean?       @default(false)
+  Project__fk__     String?
+  Feature__fk__     String?
+  Account__fk__     String?
+  Company__fk__     String?
+  Account           Account?       @relation("WorkflowOwner", fields: [Account__fk__], references: [id])
+  Company           Company?       @relation(fields: [Company__fk__], references: [id])
+  Feature           Feature?       @relation(fields: [Feature__fk__], references: [id])
+  Project           Project?       @relation(fields: [Project__fk__], references: [id])
+  WorkflowStep      WorkflowStep[]
+}
+
+model WorkflowStep {
+  id                String    @id @unique @default(cuid())
+  createdAt         DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime  @default(now()) @updatedAt @db.Timestamp(6)
+  thumbnailStoredAt Json?
+  isDeleted         Boolean?  @default(false)
+  nodeColor         String?
+  conditions        Json?
+  role              Json?
+  position          Json?
+  data              Json?
+  style             Json?
+  Workflow__fk__    String?
+  Role__fk__        String?
+  Role              Role?     @relation(fields: [Role__fk__], references: [id])
+  Workflow          Workflow? @relation(fields: [Workflow__fk__], references: [id])
+}
+
+model ProjectEmployee {
+  id            String    @id @unique @default(cuid())
+  createdAt     DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime  @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted     Boolean?  @default(false)
+  Project__fk__ String?
+  Project       Project?  @relation(fields: [Project__fk__], references: [id])
+  Account       Account[] @relation("AccountToProjectEmployee")
+}
+
+model Role {
+  id            String         @id @unique @default(cuid())
+  createdAt     DateTime       @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime       @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted     Boolean?       @default(false)
+  displayName   String?
+  description   String?
+  role          Json[]
+  Company__fk__ String?
+  Scope__fk__   String?
+  Company       Company?       @relation(fields: [Company__fk__], references: [id])
+  Scope         Scope?         @relation(fields: [Scope__fk__], references: [id])
+  WorkflowStep  WorkflowStep[]
+  Account       Account[]      @relation("AccountToRole")
+}
+
+model FolderAccount {
+  id            String    @id @unique @default(cuid())
+  createdAt     DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime  @default(now()) @updatedAt @db.Timestamp(6)
+  displayName   String?
+  isDeleted     Boolean?  @default(false)
+  Company__fk__ String?
+  Company       Company?  @relation(fields: [Company__fk__], references: [id])
+  Account       Account[] @relation("AccountToFolderAccount")
+}
+
+model CustomerProfile {
+  id               String            @id @unique @default(cuid())
+  createdAt        DateTime          @default(now()) @db.Timestamp(6)
+  updatedAt        DateTime          @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted        Boolean?          @default(false)
+  customerCode     String            @unique
+  status           CUSTOMER_STATUS   @default(ACTIVE)
+  totalOrders      Int               @default(0)
+  totalSpend       Decimal           @default(0) @db.Decimal(12, 2)
+  lastOrderAt      DateTime?
+  lastLoginAt      DateTime?
+  gstin            String?
+  walletBalance    Decimal           @default(0) @db.Decimal(12, 2)
+  addressLine1     String?
+  addressLine2     String?
+  city             String?
+  state            String?
+  pincode          String?
+  Company__fk__    String?
+  Account__fk__    String            @unique
+  Cart             Cart?
+  ChargingSessions ChargingSession[]
+  Account          Account           @relation(fields: [Account__fk__], references: [id], onDelete: Cascade)
+  Company          Company?          @relation(fields: [Company__fk__], references: [id])
+  CustomerVehicles CustomerVehicle[]
+  FavoriteStations FavoriteStation[]
+  Orders           Order[]
+  Reviews          Review[]
+  StationReview    StationReview[]
+  Transaction      Transaction[]
+  VehicleReviews   VehicleReview[]
+  RfidTags         RfidTag[]
+  RfidRequests     RfidRequest[]
+  PromoCodeUsages  PromoCodeUsage[]
+  // CustomerProfile model ke andar add honge:
+  ReferralShares         ReferralShare[]      @relation("CustomerShares")
+  ReferralsMade          ReferralUsage[]      @relation("CustomerReferralsMade")
+  ReferredBy             ReferralUsage?       @relation("CustomerReferredBy")
+  ReferralCommissions    ReferralCommission[] @relation("CustomerCommissions")
+
+  @@index([Company__fk__])
+  @@index([status])
+}
+
+model Cart {
+  id                    String          @id @unique @default(cuid())
+  createdAt             DateTime        @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime        @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted             Boolean?        @default(false)
+  CustomerProfile__fk__ String          @unique
+  CustomerProfile       CustomerProfile @relation(fields: [CustomerProfile__fk__], references: [id], onDelete: Cascade)
+  Items                 CartItem[]
+}
+
+model CartItem {
+  id                    String           @id @unique @default(cuid())
+  createdAt             DateTime         @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime         @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted             Boolean?         @default(false)
+  quantity              Int              @default(1)
+  Product__fk__         String?
+  Cart__fk__            String
+  ElectricVehicle__fk__ String?
+  Cart                  Cart             @relation(fields: [Cart__fk__], references: [id], onDelete: Cascade)
+  ElectricVehicle       ElectricVehicle? @relation(fields: [ElectricVehicle__fk__], references: [id], onDelete: Cascade)
+  Product               Product?         @relation(fields: [Product__fk__], references: [id], onDelete: Cascade)
+}
+
+model ElectricVehicle {
+  id                  String          @id @default(cuid())
+  createdAt           DateTime        @default(now()) @db.Timestamp(6)
+  updatedAt           DateTime        @updatedAt @db.Timestamp(6)
+  isDeleted           Boolean         @default(false)
+  vehicleName         String
+  brand               String
+  model               String
+  variant             String?
+  year                Int?
+  vehicleType         String
+  category            String?
+  bodyType            String?
+  exShowroomPrice     Decimal         @db.Decimal(12, 2)
+  onRoadPrice         Decimal?        @db.Decimal(12, 2)
+  salePrice           Decimal?        @db.Decimal(12, 2)
+  discountPercent     Decimal?        @db.Decimal(5, 2)
+  batteryCapacity     String?
+  batteryType         String?
+  batteryVoltage      Int?
+  removableBattery    Boolean?
+  chargingTimeAC      String?
+  chargingTimeDC      String?
+  chargerType         String?
+  fastCharging        Boolean         @default(false)
+  rangeKm             Int?
+  topSpeedKmph        Int?
+  motorPowerKW        Decimal?        @db.Decimal(8, 2)
+  motorTorqueNm       Decimal?        @db.Decimal(8, 2)
+  acceleration0To40   String?
+  kerbWeightKg        Int?
+  seatHeightMm        Int?
+  groundClearanceMm   Int?
+  wheelbaseMm         Int?
+  tyreFront           String?
+  tyreRear            String?
+  brakeFront          String?
+  brakeRear           String?
+  abs                 Boolean         @default(false)
+  cruiseControl       Boolean         @default(false)
+  reverseMode         Boolean         @default(false)
+  regenerativeBraking Boolean         @default(false)
+  navigation          Boolean         @default(false)
+  bluetooth           Boolean         @default(false)
+  gps                 Boolean         @default(false)
+  usbCharging         Boolean         @default(false)
+  mobileApp           Boolean         @default(false)
+  antiTheft           Boolean         @default(false)
+  batteryWarranty     String?
+  vehicleWarranty     String?
+  stock               Int             @default(0)
+  images              Json?
+  colors              String[]
+  brochure            String?
+  videos              Json?
+  description         String?
+  specifications      Json?
+  features            Json?
+  Company__fk__       String?
+  CartItem            CartItem[]
+  Company             Company?        @relation(fields: [Company__fk__], references: [id])
+  Reviews             VehicleReview[]
+
+  @@index([Company__fk__])
+  @@index([brand])
+  @@index([vehicleType])
+}
+
+model VehicleReview {
+  id                    String          @id @default(cuid())
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  rating                Int
+  comment               String?
+  ElectricVehicle__fk__ String
+  CustomerProfile__fk__ String
+  CustomerProfile       CustomerProfile @relation(fields: [CustomerProfile__fk__], references: [id], onDelete: Cascade)
+  ElectricVehicle       ElectricVehicle @relation(fields: [ElectricVehicle__fk__], references: [id], onDelete: Cascade)
+}
+
+model Product {
+  id                 String     @id @unique @default(cuid())
+  createdAt          DateTime   @default(now()) @db.Timestamp(6)
+  updatedAt          DateTime   @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted          Boolean?   @default(false)
+  productName        String
+  mainCategory       String?
+  subCategory        String?
+  childCategory      String?
+  vehicleType        String?
+  fuelType           String?
+  brand              String?
+  model              String?
+  partCode           String?
+  hsnCode            String?
+  oemPartCode        String?
+  mrp                Decimal    @db.Decimal(12, 2)
+  taxPercent         Decimal?   @db.Decimal(5, 2)
+  quantity           Int        @default(0)
+  b2cSale            Boolean    @default(false)
+  b2cRecommended     Boolean    @default(false)
+  b2cTrending        Boolean    @default(false)
+  b2bSale            Boolean    @default(false)
+  b2bRecommended     Boolean    @default(false)
+  b2bTrending        Boolean    @default(false)
+  compactable        String[]
+  images             Json?
+  Company__fk__      String?
+  description        String?
+  discountPercent    Decimal?   @db.Decimal(5, 2)
+  features           Json?
+  maxQuantityOrder   Int        @default(10)
+  salePrice          Decimal?   @db.Decimal(12, 2)
+  shopWithConfidence String[]
+  CartItem           CartItem[]
+  Company            Company?   @relation(fields: [Company__fk__], references: [id])
+  Reviews            Review[]
+
+  @@index([Company__fk__])
+}
+
+model Review {
+  id                    String          @id @unique @default(cuid())
+  createdAt             DateTime        @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime        @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted             Boolean?        @default(false)
+  rating                Int
+  comment               String?
+  images                Json?
+  Product__fk__         String
+  CustomerProfile__fk__ String
+  CustomerProfile       CustomerProfile @relation(fields: [CustomerProfile__fk__], references: [id], onDelete: Cascade)
+  Product               Product         @relation(fields: [Product__fk__], references: [id], onDelete: Cascade)
+
+  @@index([Product__fk__])
+  @@index([CustomerProfile__fk__])
+}
+
+model ChargingStation {
+  id                    String                 @id @unique @default(cuid())
+  createdAt             DateTime               @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime               @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted             Boolean?               @default(false)
+  name                  String
+  address               String?
+  latitude              String?
+  longitude             String?
+  powerTypes            String[]
+  amenities             String[]
+  rating                Float                  @default(0)
+  totalReviews          Int                    @default(0)
+  images                Json?
+  Company__fk__         String?
+  city                  String
+  pincode               String
+  state                 String
+  accessType            String?
+  closedDate            String?
+  emergencyContact      String?
+  liveDate              String?
+  onboardingDate        String?
+  ownership             String?
+  poc                   String?
+  pocEmail              String?
+  pocMobile             String?
+  stationId             String?
+  type                  String?
+  closingTime           String?
+  holidaySchedule       Json?
+  isOpen24Hours         Boolean                @default(false)
+  openingTime           String?
+  StationOwner__fk__    String
+  addressLine1          String?
+  addressLine2          String?
+  status                String?
+  holidayHours          String?
+  Chargers              Charger[]
+  Company               Company?               @relation(fields: [Company__fk__], references: [id])
+  StationOwner          StationOwner           @relation(fields: [StationOwner__fk__], references: [id], onDelete: Cascade)
+  FavoriteBy            FavoriteStation[]
+  RemoteOperationConfig RemoteOperationConfig?
+  RfidStationMapping    RfidStationMapping[]
+  Commercial            StationCommercial?
+  Documents             StationDocument[]
+  StationHours          StationHours[]
+  StationReviews        StationReview[]
+  Settings              StationSettings?
+  WeeklyHours           WeeklyHour[]
+  invoices              FleetHubInvoice[]
+  AccountAccess         AccountStationAccess[]
+}
+
+model StationSettings {
+  id                     String          @id @unique @default(cuid())
+  createdAt              DateTime        @default(now()) @db.Timestamp(6)
+  updatedAt              DateTime        @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted              Boolean?        @default(false)
+  ChargingStation__fk__  String          @unique
+  meterInterval          Int?
+  selectedOperations     String[]
+  websocketUrl           String?
+  payWithCard            Boolean?        @default(false)
+  payWithWallet          Boolean?        @default(false)
+  enableNotification     Boolean?        @default(false)
+  notificationRecipients String[]
+  notifyEvents           String[]
+  toleranceInWords       Int?
+  isChargerPublic        Boolean         @default(false)
+  ChargingStation        ChargingStation @relation(fields: [ChargingStation__fk__], references: [id], onDelete: Cascade)
+}
+
+model StationHours {
+  id                    String          @id @unique @default(cuid())
+  createdAt             DateTime        @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime        @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted             Boolean?        @default(false)
+  dayOfWeek             Int
+  isOpen24Hours         Boolean         @default(true)
+  isClosed              Boolean         @default(false)
+  openTime              String?
+  closeTime             String?
+  ChargingStation__fk__ String
+  ChargingStation       ChargingStation @relation(fields: [ChargingStation__fk__], references: [id], onDelete: Cascade)
+
+  @@unique([ChargingStation__fk__, dayOfWeek])
+  @@index([ChargingStation__fk__])
+}
+
+model StationCommercial {
+  id                     String          @id @unique @default(cuid())
+  createdAt              DateTime        @default(now()) @db.Timestamp(6)
+  updatedAt              DateTime        @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted              Boolean?        @default(false)
+  ChargingStation__fk__  String          @unique
+  transactionChargeType  String?
+  transactionChargeValue Float?
+  payoutCycle            String?
+  payoutDay              String?
+  chargingStation        ChargingStation @relation(fields: [ChargingStation__fk__], references: [id], onDelete: Cascade)
+}
+
+model StationDocument {
+  id                    String          @id @unique @default(cuid())
+  createdAt             DateTime        @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime        @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted             Boolean?        @default(false)
+  ChargingStation__fk__ String
+  documentType          String
+  fileUrl               String
+  fileName              String?
+  chargingStation       ChargingStation @relation(fields: [ChargingStation__fk__], references: [id], onDelete: Cascade)
+
+  @@index([ChargingStation__fk__])
+}
+
+model WeeklyHour {
+  id                    String          @id @default(cuid())
+  day                   String
+  openingTime           String?
+  closingTime           String?
+  is24Hours             Boolean         @default(false)
+  ChargingStation__fk__ String
+  ChargingStation       ChargingStation @relation(fields: [ChargingStation__fk__], references: [id])
+
+  @@unique([ChargingStation__fk__, day])
+  @@index([ChargingStation__fk__])
+}
+
+model Faq {
+  id           String       @id @default(cuid())
+  question     String
+  answer       String
+  createdAt    DateTime     @default(now()) @db.Timestamp(6)
+  updatedAt    DateTime     @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted    Boolean      @default(false)
+  displayOrder Int          @default(0)
+  isActive     Boolean      @default(true)
+  category     FAQ_CATEGORY @default(GENERAL)
+}
+
+model Charger {
+  id                    String            @id @unique @default(cuid())
+  createdAt             DateTime          @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime          @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted             Boolean?          @default(false)
+  name                  String?
+  power                 String?
+  slot                  String?
+  ChargingStation__fk__ String
+  chargeboxId           String?
+  lastConnected         DateTime?
+  status                CHARGER_STATUS    @default(AVAILABLE)
+  chargingType          String?
+  chargingId            String?
+  ChargingStation       ChargingStation   @relation(fields: [ChargingStation__fk__], references: [id], onDelete: Cascade)
+  ChargingSessions      ChargingSession[]
+  Connectors            Connector[]
+
+  @@index([ChargingStation__fk__])
+}
+
+model Connector {
+  id              String            @id @unique @default(cuid())
+  createdAt       DateTime          @default(now()) @db.Timestamp(6)
+  updatedAt       DateTime          @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted       Boolean?          @default(false)
+  name            String
+  connectorType   String
+  power           String?
+  Charger__fk__   String
+  status          CONNECTOR_STATUS  @default(AVAILABLE)
+  isPublic        Boolean?          @default(true)
+  price           Float?
+  voltage         Float?
+  ChargingSession ChargingSession[]
+  Charger         Charger           @relation(fields: [Charger__fk__], references: [id], onDelete: Cascade)
+
+  @@index([Charger__fk__])
+}
+
+model StationReview {
+  id                    String          @id @unique @default(cuid())
+  createdAt             DateTime        @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime        @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted             Boolean?        @default(false)
+  rating                Int
+  comment               String?
+  images                Json?
+  ChargingStation__fk__ String
+  CustomerProfile__fk__ String
+  ChargingStation       ChargingStation @relation(fields: [ChargingStation__fk__], references: [id], onDelete: Cascade)
+  CustomerProfile       CustomerProfile @relation(fields: [CustomerProfile__fk__], references: [id], onDelete: Cascade)
+
+  @@index([ChargingStation__fk__])
+  @@index([CustomerProfile__fk__])
+}
+
+model FavoriteStation {
+  id                    String          @id @unique @default(cuid())
+  createdAt             DateTime        @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime        @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted             Boolean?        @default(false)
+  CustomerProfile__fk__ String
+  ChargingStation__fk__ String
+  ChargingStation       ChargingStation @relation(fields: [ChargingStation__fk__], references: [id], onDelete: Cascade)
+  CustomerProfile       CustomerProfile @relation(fields: [CustomerProfile__fk__], references: [id], onDelete: Cascade)
+
+  @@unique([CustomerProfile__fk__, ChargingStation__fk__])
+  @@index([CustomerProfile__fk__])
+  @@index([ChargingStation__fk__])
+}
+
+model ChargingSession {
+  id                    String           @id @unique @default(cuid())
+  createdAt             DateTime         @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime         @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted             Boolean?         @default(false)
+  status                SESSION_STATUS   @default(PENDING)
+  startTime             DateTime?
+  endTime               DateTime?
+  energyLimit           Decimal?         @db.Decimal(10, 2)
+  amountLimit           Decimal?         @db.Decimal(12, 2)
+  energyConsumed        Decimal          @default(0) @db.Decimal(10, 2)
+  totalAmount           Decimal          @default(0) @db.Decimal(12, 2)
+  Charger__fk__         String
+  CustomerProfile__fk__ String
+  Transaction__fk__     String?          @unique
+  Connector__fk__       String?
+  RfidTag__fk__         String?
+  Charger               Charger          @relation(fields: [Charger__fk__], references: [id])
+  Connector             Connector?       @relation(fields: [Connector__fk__], references: [id])
+  CustomerProfile       CustomerProfile  @relation(fields: [CustomerProfile__fk__], references: [id])
+  RfidTag               RfidTag?         @relation(fields: [RfidTag__fk__], references: [id])
+  Transaction           Transaction?     @relation(fields: [Transaction__fk__], references: [id])
+  fleetHubInvoice__fk__ String?
+  fleetHubInvoice       FleetHubInvoice? @relation(fields: [fleetHubInvoice__fk__], references: [id])
+
+  @@index([fleetHubInvoice__fk__])
+  @@index([Charger__fk__])
+  @@index([CustomerProfile__fk__])
+  @@index([status])
+  @@index([Connector__fk__])
+  @@index([RfidTag__fk__])
+}
+
+model Invitation {
+  id              String   @id @unique @default(cuid())
+  createdAt       DateTime @default(now()) @db.Timestamp(6)
+  updatedAt       DateTime @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted       Boolean? @default(false)
+  phoneNumber     String
+  friendName      String?
+  status          String   @default("PENDING")
+  InvitedBy__fk__ String?
+  InvitedBy       Account? @relation("InvitedBy", fields: [InvitedBy__fk__], references: [id])
+
+  @@index([InvitedBy__fk__])
+}
+
+model CustomerVehicle {
+  id                    String          @id @unique @default(cuid())
+  createdAt             DateTime        @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime        @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted             Boolean         @default(false)
+  brand                 String
+  model                 String
+  chargerType           String
+  vehicleNumber         String
+  CustomerProfile__fk__ String
+  CustomerProfile       CustomerProfile @relation(fields: [CustomerProfile__fk__], references: [id], onDelete: Cascade)
+}
+
+model StationOwner {
+  id               String             @id @unique @default(cuid())
+  createdAt        DateTime           @default(now()) @db.Timestamp(6)
+  updatedAt        DateTime           @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted        Boolean            @default(false)
+  partnerType      PARTNER_TYPE
+  status           OWNER_STATUS       @default(ACTIVE)
+  onboardingDate   DateTime
+  closedDate       DateTime?
+  ownerName        String
+  email            String
+  phoneNumber      String
+  addressLineOne   String
+  addressLineTwo   String
+  pincode          String
+  city             String
+  state            String
+  profileStatus    OwnerProfileStatus @default(INCOMPLETE)
+  displayId        String             @unique
+  BankingDetails   BankingDetails?
+  ChargingStations ChargingStation[]
+  LegalDetails     LegalDetails?
+  OwnerDocument    OwnerDocument?
+}
+
+model RemoteOperationConfig {
+  id                    String              @id @default(cuid())
+  ChargingStation__fk__ String              @unique
+  connectorId           Int
+  meterIntervalSeconds  Int
+  selectedOperation     RemoteOperationType
+  ChargingStation       ChargingStation     @relation(fields: [ChargingStation__fk__], references: [id])
+}
+
+model LegalDetails {
+  id                 String       @id @unique @default(cuid())
+  createdAt          DateTime     @default(now()) @db.Timestamp(6)
+  updatedAt          DateTime     @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted          Boolean      @default(false)
+  entityName         String?
+  entityType         String
+  aadhaarNumber      String
+  panNumber          String
+  gstNumber          String
+  StationOwner__fk__ String       @unique
+  StationOwner       StationOwner @relation(fields: [StationOwner__fk__], references: [id], onDelete: Cascade)
+
+  @@index([StationOwner__fk__])
+}
+
+model BankingDetails {
+  id                  String       @id @unique @default(cuid())
+  createdAt           DateTime     @default(now()) @db.Timestamp(6)
+  updatedAt           DateTime     @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted           Boolean      @default(false)
+  accountHolderName   String
+  accountHolderNumber String
+  accountHolderBank   String
+  ifscCode            String
+  StationOwner__fk__  String       @unique
+  StationOwner        StationOwner @relation(fields: [StationOwner__fk__], references: [id], onDelete: Cascade)
+
+  @@index([StationOwner__fk__])
+}
+
+model OwnerDocument {
+  id                 String       @id @unique @default(cuid())
+  createdAt          DateTime     @default(now()) @db.Timestamp(6)
+  updatedAt          DateTime     @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted          Boolean      @default(false)
+  aadhaar            String
+  pancard            String
+  gst                String
+  cancelledCheque    String
+  StationOwner__fk__ String       @unique
+  StationOwner       StationOwner @relation(fields: [StationOwner__fk__], references: [id], onDelete: Cascade)
+
+  @@index([StationOwner__fk__])
+}
+
+model FleetOwner {
+  id              String            @id @default(cuid())
+  fleetId         String            @unique
+  ownerName       String
+  status          String            @default("LIVE")
+  onboardingDate  DateTime
+  closedDate      DateTime?
+  poc             String
+  email           String
+  mobileNo        String
+  addressLine1    String
+  addressLine2    String?
+  pincode         String
+  city            String
+  state           String
+  paymentTerms    String            @default("PREPAID")
+  payoutDay       String?
+  entityName      String?
+  entityType      String            @default("FLEET_RESERVED")
+  gstNumber       String
+  gstDocUrl       String?
+  agreementDocUrl String?
+  createdAt       DateTime          @default(now()) @db.Timestamp(6)
+  updatedAt       DateTime          @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted       Boolean           @default(false)
+  rfidTags        RfidTag[]
+  invoices        FleetHubInvoice[]
+
+  @@index([fleetId])
+  @@index([ownerName])
+}
+
+model RfidTag {
+  id                    String               @id @default(cuid())
+  tagId                 String?              @unique
+  tagType               String               @default("STANDALONE")
+  balanceAmount         Float                @default(0.0)
+  reserveAmount         Float                @default(0.0)
+  mobileNumber          String?
+  email                 String?
+  maxActiveTransactions Int?                 @default(1)
+  inTransaction         Boolean              @default(false)
+  isBlocked             Boolean              @default(false)
+  expiryDate            DateTime
+  status                String               @default("ACTIVE")
+  fleetOwner__fk__      String?
+  parentRfid__fk__      String?
+  createdAt             DateTime             @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime             @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted             Boolean              @default(false)
+  ChargingSession       ChargingSession[]
+  stationMappings       RfidStationMapping[]
+  fleetOwner            FleetOwner?          @relation(fields: [fleetOwner__fk__], references: [id], onDelete: Cascade)
+  parent                RfidTag?             @relation("RfidParentChild", fields: [parentRfid__fk__], references: [id])
+  children              RfidTag[]            @relation("RfidParentChild")
+  CustomerProfile__fk__ String?
+  CustomerProfile       CustomerProfile?     @relation(fields: [CustomerProfile__fk__], references: [id])
+  RfidRequest           RfidRequest?
+  transactions          Transaction[]
+
+  @@index([tagId])
+  @@index([fleetOwner__fk__])
+  @@index([parentRfid__fk__])
+}
+
+model RfidStationMapping {
+  id                    String          @id @default(cuid())
+  rfidTag__fk__         String
+  chargingStation__fk__ String
+  charger__fk__         String?
+  connector__fk__       String?
+  customPricePerKwh     Float?
+  createdAt             DateTime        @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime        @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted             Boolean         @default(false)
+  chargingStation       ChargingStation @relation(fields: [chargingStation__fk__], references: [id], onDelete: Cascade)
+  rfidTag               RfidTag         @relation(fields: [rfidTag__fk__], references: [id], onDelete: Cascade)
+
+  @@index([rfidTag__fk__])
+  @@index([chargingStation__fk__])
+}
+
+model FleetHubInvoice {
+  id                    String         @id @default(cuid())
+  invoiceNumber         String         @unique
+  fleetOwner__fk__      String
+  chargingStation__fk__ String
+  billingPeriod         String // e.g. "August 2024"
+  billingStartDate      DateTime
+  billingEndDate        DateTime
+  dueDate               DateTime
+  totalSessions         Int            @default(0)
+  totalEnergy           Decimal        @default(0) @db.Decimal(12, 2)
+  subtotal              Decimal        @default(0) @db.Decimal(12, 2)
+  gstAmount             Decimal        @default(0) @db.Decimal(12, 2)
+  totalAmount           Decimal        @default(0) @db.Decimal(12, 2)
+  status                INVOICE_STATUS @default(PENDING)
+  invoiceUrl            String?
+  paidAt                DateTime?
+  sentAt                DateTime?
+  createdAt             DateTime       @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime       @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted             Boolean        @default(false)
+
+  fleetOwner       FleetOwner        @relation(fields: [fleetOwner__fk__], references: [id])
+  chargingStation  ChargingStation   @relation(fields: [chargingStation__fk__], references: [id])
+  chargingSessions ChargingSession[]
+
+  @@unique([fleetOwner__fk__, chargingStation__fk__, billingStartDate, billingEndDate])
+  @@index([fleetOwner__fk__])
+  @@index([chargingStation__fk__])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model AccountStationAccess {
+  id                    String @id @default(cuid())
+  Account__fk__         String
+  ChargingStation__fk__ String
+
+  Account         Account         @relation(fields: [Account__fk__], references: [id], onDelete: Cascade)
+  ChargingStation ChargingStation @relation(fields: [ChargingStation__fk__], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted Boolean  @default(false)
+
+  @@unique([Account__fk__, ChargingStation__fk__])
+  @@index([Account__fk__])
+  @@index([ChargingStation__fk__])
+}
+
+model RfidRequest {
+  id         String    @id @unique @default(cuid())
+  createdAt  DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime  @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted  Boolean?  @default(false)
+  quantity   Int       @default(1)
+  amountPaid Decimal   @db.Decimal(12, 2)
+  isIssued   Boolean   @default(false) // false = Pending Request, true = Issued/Linked
+  issuedAt   DateTime?
+
+  CustomerProfile__fk__ String
+  CustomerProfile       CustomerProfile @relation(fields: [CustomerProfile__fk__], references: [id], onDelete: Cascade)
+
+  // Optional: Jab card issue ho jayega tab specific RfidTag link hoga
+  RfidTag__fk__ String?  @unique
+  RfidTag       RfidTag? @relation(fields: [RfidTag__fk__], references: [id], onDelete: SetNull)
+
+  @@index([CustomerProfile__fk__])
+  @@index([isIssued])
+}
+
+model PromoCode {
+  id                  String   @id @default(uuid())
+  code                String   @unique
+  banner              String? // Base64 string stored here
+  discountType        String // CHARGING, SIGNUP
+  discountScope       String // PERCENTAGE, FIXED
+  discountValue       Float
+  maxDiscountValue    Float?
+  minTransactionValue Float?
+  usageLimit          Int?
+  validFrom           DateTime
+  validUntil          DateTime
+  status              String // ACTIVE, INACTIVE, EXPIRED, SCHEDULED
+  isDeleted           Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  usages PromoCodeUsage[] // Relation with usage tracking table
+}
+
+model PromoCodeUsage {
+  id                    String          @id @default(uuid())
+  promoCode__fk__       String
+  PromoCode             PromoCode       @relation(fields: [promoCode__fk__], references: [id])
+  customerProfile__fk__ String
+  CustomerProfile       CustomerProfile @relation(fields: [customerProfile__fk__], references: [id])
+  transaction__fk__     String? // Agar charging transaction ke sath linked hai
+  Transaction           Transaction?    @relation(fields: [transaction__fk__], references: [id])
+  discountGiven         Float // Us user ko kitna discount mila
+  createdAt             DateTime        @default(now()) // Redemption timestamp (Redemption Trend ke liye)
+}
+
+model PlatformSetting {
+  id              String    @id @unique @default(cuid())
+  createdAt       DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted       Boolean?  @default(false)
+
+  // Platform Identity (UI Screen 1)
+  platformName    String?
+  email           String?
+  logoUrl         String?
+  pocName         String?
+  pocMobile       String?
+  supportPhone    String?
+  website         String?
+  addressLine1    String?
+  addressLine2    String?
+  city            String?
+  pincode         String?
+
+  // App Links & Deep Links 
+  googlePlayUrl   String?
+  appStoreUrl     String?
+  referralBaseUrl String?
+}
+model PaymentGatewayConfig {
+  id              String    @id @unique @default(cuid())
+  createdAt       DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted       Boolean?  @default(false)
+
+  gatewayName     String    @unique // RAZORPAY, STRIPE, PAYU
+  isActive        Boolean   @default(false)
+  apiKey          String?
+  apiSecret       String?
+  isLive          Boolean   @default(true)
+  webhookVerified Boolean   @default(false)
+}
+model ThirdPartyIntegration {
+  id              String    @id @unique @default(cuid())
+  createdAt       DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @db.Timestamp(6)
+  isDeleted       Boolean?  @default(false)
+
+  serviceName     String    @unique // GOOGLE_MAPS, TWILIO, SENDGRID, FIREBASE, SENTRY
+  isConnected     Boolean   @default(false)
+  configData      String?   // Additional JSON config/metadata if required
+}
+
+model ReferralCampaign {
+  id                   String              @id @default(uuid())
+  bannerUrl            String?
+  linkType             REFERRAL_LINK_TYPE  @default(GENERAL)
+  referralLink         String              @unique
+  referrerRewardAmount Float               @default(0.0)
+  refereeRewardAmount  Float               @default(0.0)
+  minFirstChargeAmount Float               @default(0.0)
+  expiryDate           DateTime?
+  customMessage        String?
+  termsAndConditions   String[]
+  isShortened          Boolean             @default(true)
+  status               REFERRAL_STATUS     @default(ACTIVE)
+  Account__fk__        String?
+  Account              Account?            @relation(fields: [Account__fk__], references: [id])
+  isDeleted            Boolean             @default(false)
+  deletedAt            DateTime?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  
+
+  shares               ReferralShare[]
+  usages               ReferralUsage[]
+}
+
+model ReferralShare {
+  id           String           @id @default(uuid())
+  campaignId   String
+  campaign     ReferralCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  referrerId   String
+  referrer     CustomerProfile  @relation("CustomerShares", fields: [referrerId], references: [id], onDelete: Cascade)
+  channelsUsed String[]
+  totalClicks  Int              @default(0)
+  isDeleted    Boolean          @default(false)
+  deletedAt    DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  clicks       ReferralClickLog[]
+  usages       ReferralUsage[]
+}
+
+model ReferralClickLog {
+  id              String        @id @default(uuid())
+  referralShareId String
+  referralShare   ReferralShare @relation(fields: [referralShareId], references: [id], onDelete: Cascade)
+  deviceInfo      String?
+  location        String?
+  channel         String?
+  source          String?
+  ipAddress       String?
+  clickedAt       DateTime      @default(now())
+}
+
+model ReferralUsage {
+  id               String           @id @default(uuid())
+  campaignId       String
+  campaign         ReferralCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  referralShareId  String?
+  referralShare    ReferralShare?   @relation(fields: [referralShareId], references: [id], onDelete: SetNull)
+  referrerId       String
+  referrer         CustomerProfile  @relation("CustomerReferralsMade", fields: [referrerId], references: [id], onDelete: Cascade)
+  refereeId        String           @unique
+  referee          CustomerProfile  @relation("CustomerReferredBy", fields: [refereeId], references: [id], onDelete: Cascade)
+  signupStatus     String           @default("Pending")
+  firstChargeDate  DateTime?
+  amountSpent      Float?
+  discountGiven    Float?
+  conversionStatus String           @default("Pending")
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  commission       ReferralCommission?
+}
+
+model ReferralCommission {
+  id           String           @id @default(uuid())
+  usageId      String           @unique
+  usage        ReferralUsage    @relation(fields: [usageId], references: [id], onDelete: Cascade)
+  referrerId   String
+  referrer     CustomerProfile  @relation("CustomerCommissions", fields: [referrerId], references: [id], onDelete: Cascade)
+  amount       Float
+  status       COMMISSION_STATUS @default(PENDING)
+  earningDate  DateTime         @default(now())
+  payoutDate   DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+enum REFERRAL_LINK_TYPE {
+  GENERAL
+  CUSTOM
+}
+
+enum REFERRAL_STATUS {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+}
+
+enum COMMISSION_STATUS {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+enum INVOICE_STATUS {
+  PAID
+  PENDING
+  OVERDUE
+}
+
+enum OwnerProfileStatus {
+  COMPLETED
+  INCOMPLETE
+  CLOSED
+}
+
+enum RemoteOperationType {
+  CHANGE_AVAILABILITY
+  CHANGE_CONFIGURATION
+  REMOTE_START
+  REMOTE_STOP
+  GET_DIAGNOSTICS
+  UPDATE_FIRMWARE
+  RESET
+  TRIGGER_MESSAGE
+  UNLOCK_CONNECTOR
+  SET_CHARGING_PROFILE
+}
+
+enum OWNER_STATUS {
+  ACTIVE
+  INACTIVE
+}
+
+enum PARTNER_TYPE {
+  FRANCHISE
+  DIRECT
+}
+
+enum FAQ_CATEGORY {
+  GENERAL
+  STATION
+  RFID
+}
+
+enum ACCOUNT_TYPE {
+  ADMIN
+  COMPANY
+  EMPLOYEE
+  VENDOR
+  CUSTOMER
+}
+
+enum ORDER_STATUS {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PAYMENT_STATUS {
+  UNPAID
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PAYMENT_METHOD {
+  CARD
+  UPI
+  NET_BANKING
+  WALLET
+  CASH_ON_DELIVERY
+}
+
+enum CUSTOMER_STATUS {
+  ACTIVE
+  INACTIVE
+  VIP
+}
+
+enum TRANSACTION_STATUS {
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum TRANSACTION_TYPE {
+  PAYMENT
+  REFUND
+  PARTIAL_REFUND
+}
+
+enum PAYMENT_GATEWAY {
+  RAZORPAY
+  STRIPE
+  PAYPAL
+  MANUAL
+}
+
+enum SESSION_STATUS {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum CONNECTOR_STATUS {
+  AVAILABLE
+  OFFLINE
+  BUSY
+  FAULT
+  PREPARING
+}
+
+enum CHARGER_STATUS {
+  AVAILABLE
+  OFFLINE
+  FAULT
+  MAINTENANCE
+}
+
+enum STATION_STATUS {
+  UNDER_DEVELOPMENT
+  LIVE
+  CLOSED
+}
+
+enum ADMIN_ROLE {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  STATION_ADMIN
+  FLEET_ADMIN
+}
+
+enum ACCOUNT_STATUS {
+  INVITED
+  ACTIVE
+  INACTIVE
+}

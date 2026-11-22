@@ -1,0 +1,125 @@
+#
+# GRAPH
+#
+type ElectricVehicle {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  isDeleted: Boolean
+  vehicleName: String
+  brand: String
+  model: String
+  variant: String
+  year: Int
+  vehicleType: String
+  category: String
+  bodyType: String
+  exShowroomPrice: Float
+  onRoadPrice: Float
+  salePrice: Float
+  discountPercent: Float
+  batteryCapacity: String
+  batteryType: String
+  batteryVoltage: Int
+  chargingTimeAC: String
+  chargingTimeDC: String
+  chargerType: String
+  fastCharging: Boolean
+  rangeKm: Int
+  topSpeedKmph: Int
+  motorPowerKW: Float
+  motorTorqueNm: Float
+  abs: Boolean
+  cruiseControl: Boolean
+  reverseMode: Boolean
+  regenerativeBraking: Boolean
+  navigation: Boolean
+  bluetooth: Boolean
+  gps: Boolean
+  usbCharging: Boolean
+  mobileApp: Boolean
+  antiTheft: Boolean
+  stock: Int
+  images: JSON
+  colors: [String]
+  brochure: String
+  videos: JSON
+  description: String
+  specifications: JSON
+  features: JSON
+  Company: Company
+  _totalCount: Int
+  message: String
+  statusMsg: String
+}
+
+# RESOLVER
+#
+extend type Query {
+  ElectricVehicleRead(
+    vehicleId: ID
+    vehicleName: String
+    brand: String
+    vehicleType: String
+    searchText: String
+    take: PositiveInt
+    skip: Int
+  ): [ElectricVehicle!]!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE, CUSTOMER])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  ElectricVehicleDetailsRead(vehicleId: ID!): ElectricVehicle!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE, CUSTOMER])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+
+extend type Mutation {
+  ElectricVehicleCreate(
+    vehicleName: String!
+    brand: String!
+    model: String!
+    variant: String
+    year: Int
+    vehicleType: String!
+    category: String
+    bodyType: String
+    exShowroomPrice: Float!
+    onRoadPrice: Float
+    salePrice: Float
+    discountPercent: Float
+    batteryCapacity: String
+    batteryType: String
+    batteryVoltage: Int
+    chargingTimeAC: String
+    chargingTimeDC: String
+    chargerType: String
+    fastCharging: Boolean
+    rangeKm: Int
+    topSpeedKmph: Int
+    motorPowerKW: Float
+    motorTorqueNm: Float
+    abs: Boolean
+    cruiseControl: Boolean
+    reverseMode: Boolean
+    regenerativeBraking: Boolean
+    navigation: Boolean
+    bluetooth: Boolean
+    gps: Boolean
+    usbCharging: Boolean
+    mobileApp: Boolean
+    antiTheft: Boolean
+    stock: Int
+    images: JSON
+    colors: [String]
+    brochure: String
+    videos: JSON
+    description: String
+    specifications: JSON
+    features: JSON
+    companyId: ID
+  ): ElectricVehicle!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  ElectricVehicleDelete(vehicleIds: [ID!]!): ElectricVehicle
+    @isAuthenticated(accountType: [ADMIN, COMPANY])
+}

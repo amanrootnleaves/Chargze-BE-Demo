@@ -1,0 +1,269 @@
+# -------------------------------------------------------------
+# Types
+# -------------------------------------------------------------
+# Single mapped gun/connector details with UI badge identifiers
+type MappedConnectorItem {
+  chargerId: ID
+  connectorId: ID
+  chargerName: String
+  chargeboxId: String
+  chargingId: String
+  connectorName: String
+  connectorType: String
+}
+
+# Single Station block for the Modal Form (Mirror of StationHubMappingInput)
+type RfidStationHubMappingItem {
+  chargingStationId: ID!
+  chargingStationName: String!
+  city: String
+
+  # DC Charger selection & price
+  dcPrice: Float
+  dcConnectors: [MappedConnectorItem!]!
+
+  # AC Charger selection & price
+  acPrice: Float
+  acConnectors: [MappedConnectorItem!]!
+}
+
+# Full Edit Modal Response
+type RfidStationMappingsResponse {
+  rfidTagId: ID!
+  tagId: String
+  hubs: [RfidStationHubMappingItem!]!
+}
+type RfidStationMapping {
+  id: ID!
+  rfidTagId: ID!
+  chargingStationId: ID!
+  chargerId: ID
+  connectorId: ID
+  customPricePerKwh: Float
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type RfidTag {
+  id: ID!
+  tagId: String
+  tagType: RfidTagType!
+  isBlocked: Boolean!
+  inTransaction: Boolean!
+  status: String
+
+  # Financial Fields & Limits
+  balanceAmount: Float!
+  reserveAmount: Float!
+  maxActiveTransactions: Int
+  expiryDate: DateTime!
+
+  # Contact Details
+  mobileNumber: PhoneNumber
+  email: EmailAddress
+
+  # Relations & Foreign Keys
+  fleetOwnerId: ID
+  fleetOwner: FleetOwner
+  parentId: ID
+  parent: RfidTag
+  children: [RfidTag!]
+  stationMappings: [RfidStationMapping!]
+
+  # Metadata
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  isDeleted: Boolean!
+}
+type RfidTagsResponse {
+  nodes: [RfidTag!]!
+  totalCount: Int!
+  totalPages: Int!
+  currentPage: Int!
+}
+
+# -------------------------------------------------------------
+# Inputs
+# -------------------------------------------------------------
+
+input CreateRfidTagInput {
+  tagId: String
+  tagType: RfidTagType!
+  fleetOwnerId: ID
+  parentId: ID
+  reserveAmount: Float
+  balanceAmount: Float
+  maxActiveTransactions: Int = 1
+  expiryDate: DateTime!
+  mobileNumber: PhoneNumber
+  email: EmailAddress
+}
+
+# 1. Ek specific selected gun (connector) ki IDs
+input SelectedConnectorInput {
+  chargerId: ID!
+  connectorId: ID!
+}
+
+# 2. Figma UI ke ek single Station/Hub block ka data
+input StationHubMappingInput {
+  chargingStationId: ID!
+
+  # DC Charger selection & price
+  dcConnectors: [SelectedConnectorInput!]
+  dcPrice: Float
+
+  # AC Charger selection & price
+  acConnectors: [SelectedConnectorInput!]
+  acPrice: Float
+}
+
+# 3. Main Mutation Input (Updated)
+input MapRfidStationsInput {
+  rfidTagId: ID!
+  hubs: [StationHubMappingInput]!
+}
+input RfidTagsFilterInput {
+  search: String
+  dateFilter: DateFilterInput
+  tagType: RfidTagType
+  fleetOwnerId: ID
+  isBlocked: Boolean
+  inTransaction: Boolean
+  page: Int = 1
+  limit: Int = 20
+}
+
+# Child specific input jisme har child ki apni details hongi
+input ChildTagItemInput {
+  tagId: String
+  expiryDate: DateTime!
+  mobileNumber: PhoneNumber
+  email: EmailAddress
+  maxActiveTransactions: Int = 1
+}
+
+# Bulk input jisme common parent/fleet details hongi
+input CreateBulkChildRfidTagsInput {
+  parentId: ID!
+  fleetOwnerId: ID
+  children: [ChildTagItemInput!]!
+}
+
+input UpdateRfidTagInput {
+  id: ID! # Required to find the tag
+  # Financial & Limits (All optional for partial updates)
+  balanceAmount: Float
+  reserveAmount: Float
+  maxActiveTransactions: Int
+
+  # Status & Dates
+  isBlocked: Boolean
+  expiryDate: DateTime
+
+  # Contact Details
+  mobileNumber: PhoneNumber
+  email: EmailAddress
+}
+
+type RfidTagDetailResponse {
+  rfidTag: RfidTag!
+  customerProfile: CustomerProfile # Agar customer assign nahi hoga, toh ye null return karega
+  shippingDetails: CustomerProfile # Agar available nahi hai, toh ye bhi null return karega
+}
+
+type RfidRequest {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  quantity: Int!
+  amountPaid: Float!
+  isIssued: Boolean!
+  issuedAt: DateTime
+  customerProfile: CustomerProfile
+  rfidTag: RfidTag
+}
+
+type RfidRequestsResponse {
+  nodes: [RfidRequest!]!
+  totalCount: Int!
+  totalPages: Int!
+  currentPage: Int!
+}
+
+input RfidRequestsFilterInput {
+  search: String
+  isIssued: Boolean!
+  dateFilter: DateFilterInput
+  page: Int = 1
+  limit: Int = 20
+}
+type KpiMetric {
+  value: Float! # Current total count ya amount
+  percentageChange: Float! # Percentage value (jaise 12.4)
+  isIncrease: Boolean! # True matlab green/increase, False matlab decrease
+}
+
+type RfidKpiStats {
+  totalRfidCards: KpiMetric!
+  linkedRfid: KpiMetric!
+  pendingRequests: KpiMetric!
+  standalone: KpiMetric!
+  totalRfidAmount: KpiMetric!
+}
+
+# -------------------------------------------------------------
+# Mutations
+# -------------------------------------------------------------
+
+extend type Mutation {
+  createRfidTag(input: CreateRfidTagInput!): RfidTag!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  createBulkChildRfidTags(input: CreateBulkChildRfidTagsInput!): [RfidTag!]!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  mapRfidStations(input: MapRfidStationsInput!): [RfidStationMapping!]!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  updateRfidTag(input: UpdateRfidTagInput!): RfidTag!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+
+# -------------------------------------------------------------
+# Queries
+# -------------------------------------------------------------
+
+extend type Query {
+  getRfidTags(filter: RfidTagsFilterInput): RfidTagsResponse!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  getRfidStationMappings(rfidTagId: ID!): RfidStationMappingsResponse!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  getRfidDetail(id: ID!): RfidTagDetailResponse!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  getRfidPurchaseRequests(
+    filter: RfidRequestsFilterInput!
+  ): RfidRequestsResponse!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  getRfidKpiStats: RfidKpiStats!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  exportRfidTags(
+    format: EXPORT_FORMAT!
+    filters: RfidTagsFilterInput
+  ): ExportResponse!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  exportRfidPurchaseRequests(
+    format: EXPORT_FORMAT!
+    filters: RfidRequestsFilterInput
+  ): ExportResponse!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}

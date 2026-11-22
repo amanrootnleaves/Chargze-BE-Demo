@@ -1,0 +1,46 @@
+#
+# GRAPH
+#
+type DynamicColumn {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  fields: JSON
+  Feature: Feature
+  Feature__fk__: String
+  Company: Company
+  Company__fk__: String
+  message: String
+  status: String
+  _totalCount: Int
+}
+
+#
+# RESOLVER
+#
+extend type Mutation {
+  DynamicColumnCreate(
+    featureId: ID!
+  ): DynamicColumn!
+  @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE, VENDOR])
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  DynamicColumnUpdate(
+    dynamicColumnId: ID!,
+    fields: JSON!
+  ): DynamicColumn!
+  @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE, VENDOR])
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  DynamicColumnDelete(dynamicColumnId: ID!): DynamicColumn!
+  @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE, VENDOR])
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+extend type Query {
+  DynamicColumnRead(
+    companyId: ID
+    displayNameToSearch: String
+    take: PositiveInt
+    skip: Int
+  ): [DynamicColumn!]!
+  @isAuthenticated(accountType: [COMPANY, VENDOR, EMPLOYEE, ADMIN])
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}

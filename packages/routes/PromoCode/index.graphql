@@ -1,0 +1,146 @@
+input CreatePromoCodeInput {
+  banner: String # Base64 string / URL of the uploaded banner
+  code: String! # Unique promo code (e.g., FIRSTUSER100)
+  discountType: DiscountType! # CHARGING or SIGNUP
+  discountScope: DiscountScope! # PERCENTAGE or FIXED
+  discountValue: Float! # Discount value (e.g., 25 for %, 100 for fixed)
+  maxDiscountValue: Float # Maximum cap on discount
+  minTransactionValue: Float # Minimum cart/transaction value required
+  usageLimit: Int # Null means unlimited uses
+  validFrom: String! # Start date/time string
+  validUntil: String! # Expiry date/time string
+  status: PromoCodeStatus # Optional, defaults to ACTIVE or SCHEDULED
+}
+
+# -------------------------------------------------------------
+# Response Type for Promo Code Mutation
+# -------------------------------------------------------------
+type PromoCodeResponse {
+  success: Boolean!
+  message: String!
+  promoCode: PromoCode
+}
+
+# -------------------------------------------------------------
+# Type Definition matching database model
+# -------------------------------------------------------------
+type PromoCode {
+  id: ID!
+  code: String!
+  banner: String
+  discountType: String!
+  discountScope: String!
+  discountValue: Float!
+  maxDiscountValue: Float
+  minTransactionValue: Float
+  usageLimit: Int
+  validFrom: String!
+  validUntil: String!
+  status: String!
+  createdAt: String!
+  updatedAt: String!
+}
+input PromoCodeFilterInput {
+  status: PromoCodeQueryStatus # Filter by tab: ACTIVE, INACTIVE, EXPIRED, etc. (Null means All Codes)
+  search: String # Search by promo code text
+  page: Int # Pagination page number
+  limit: Int # Items per page limit
+  dateFilter: DateFilterInput
+}
+
+type PromoCodeListResponse {
+  success: Boolean!
+  message: String!
+  promoCodes: [PromoCode!]!
+  totalCount: Int!
+}
+
+type PromoCodeKPIData {
+  totalCoupons: Int!
+  totalCouponsGrowth: Float
+  totalRevenue: Float!
+  totalRevenueGrowth: Float
+  totalUses: Int!
+  totalUsesGrowth: Float
+  avgDiscount: Float!
+  avgDiscountGrowth: Float
+  conversionRate: Float!
+  conversionRateGrowth: Float
+}
+type PromoCodeAnalyticsData {
+  trendGrowthPercentage: Float!
+  redemptionTrend: [RedemptionTrendPoint!]!
+  savingsDistribution: [SavingsDistributionItem!]!
+  topPerformingCodes: [TopPerformingCodeItem!]!
+  statusBreakdown: [StatusBreakdownItem!]!
+  allCodesPerformance: [PromoCodePerformanceItem!]!
+}
+
+type PromoCodePerformanceItem {
+  id: ID!
+  code: String!
+  discountScope: DiscountScope!
+  discountValue: Float!
+  maxDiscountValue: Float
+  redeemedCount: Int!
+  totalUses: Int
+  usagePercentage: Float
+  savingsGiven: Float!
+  status: PromoCodeQueryStatus!
+}
+
+type RedemptionTrendPoint {
+  label: String!
+  usageCount: Int!
+  savingsAmount: Float!
+}
+
+type SavingsDistributionItem {
+  code: String!
+  savings: Float!
+}
+
+type TopPerformingCodeItem {
+  id: ID!
+  code: String!
+  uses: Int!
+  status: PromoCodeQueryStatus!
+}
+
+type StatusBreakdownItem {
+  status: PromoCodeQueryStatus!
+  count: Int!
+  percentage: Float!
+}
+# -------------------------------------------------------------
+# Mutation Extension
+# -------------------------------------------------------------
+extend type Mutation {
+  createPromoCode(input: CreatePromoCodeInput!): PromoCodeResponse!
+    @isAuthenticated(accountType: [ADMIN, COMPANY])
+    @rateLimit(window: "1s", max: 10, message: "RATE_LIMIT")
+}
+
+# -------------------------------------------------------------
+# Query Extension
+# -------------------------------------------------------------
+extend type Query {
+  getPromoCodes(filter: PromoCodeFilterInput): PromoCodeListResponse!
+    @isAuthenticated(accountType: [ADMIN, COMPANY])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  exportPromoCodes(
+    filter: PromoCodeFilterInput
+    format: EXPORT_FORMAT!
+  ): ExportResponse!
+    @isAuthenticated(accountType: [ADMIN, COMPANY])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  getPromoCodeKPIs(dateFilter: DateFilterInput): PromoCodeKPIData!
+    @isAuthenticated(accountType: [ADMIN, COMPANY])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  getPromoCodeAnalytics(dateFilter: DateFilterInput): PromoCodeAnalyticsData!
+    @isAuthenticated(accountType: [ADMIN, COMPANY])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}

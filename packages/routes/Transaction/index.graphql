@@ -1,0 +1,255 @@
+#
+# GRAPH
+#
+type Transaction {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  amount: Float
+  currency: String
+  status: String
+  type: String
+  gateway: String
+  gatewayTxnId: String
+  gatewayResponse: JSON
+  paidAt: DateTime
+  failureReason: String
+  Order: Order
+  Company: Company
+  CustomerProfile: CustomerProfile
+  _totalCount: Int
+  message: String
+  statusMsg: String
+}
+
+type TransactionStats {
+  totalRevenue: Float
+  completedTransactions: Int
+  pendingTransactions: Int
+  failedTransactions: Int
+  totalRevenuePercentage: Float
+  completedTransactionsPercentage: Float
+  pendingTransactionsPercentage: Float
+  failedTransactionsPercentage: Float
+}
+
+type TransactionClientDetails {
+  transactionId: String!
+  clientName: String!
+  clientId: String
+  city: String
+}
+
+type TransactionStationDetails {
+  hubName: String!
+  hubId: String
+  chargerPort: String!
+  startTime: DateTime
+  endTime: DateTime
+  durationMinutes: Int
+  meterStartValue: Float
+  meterStopValue: Float
+}
+
+type TransactionCostBreakdown {
+  energyDeliveredKwh: Float!
+  ratePerKwh: Float
+  energyCost: Float!
+  couponCode: String
+  couponDiscount: Float
+  gstRatePercentage: Float
+  gstAmount: Float
+  totalCharged: Float!
+}
+
+type TransactionPaymentDetails {
+  paymentMethod: String!
+  status: TRANSACTION_STATUS!
+}
+
+type HubTransactionDetailResponse {
+  id: ID!
+  displayTxnId: String!
+  status: TRANSACTION_STATUS!
+  createdAt: DateTime!
+  clientDetails: TransactionClientDetails!
+  stationDetails: TransactionStationDetails!
+  costBreakdown: TransactionCostBreakdown!
+  paymentDetails: TransactionPaymentDetails!
+  invoiceUrl: String
+}
+
+# -------------------------------------------------------------
+# Transactions UI Schema (Listing + KPIs)
+# -------------------------------------------------------------
+
+type HubTransactionItem {
+  id: ID!
+  txnId: String!
+  clientName: String!
+  chargingHub: String!
+  city: String
+  chargingType: String
+  chargerId: String
+  connectorId: String
+  paymentType: String!
+  energyConsumed: Float
+  refundAmount: Float
+  amountPaid: Float!
+  status: TRANSACTION_STATUS
+  invoiceUrl: String
+  clientId: ID
+  chargingHubId: ID
+  createdAt: DateTime!
+}
+
+type PaginatedTransactionsResponse {
+  totalCount: Int!
+  page: Int!
+  limit: Int!
+  nodes: [HubTransactionItem!]!
+}
+
+type HubTransactionsKPIsResponse {
+  totalTransactions: Int!
+  activeNow: Int!
+  completed: Int!
+  failed: Int!
+  totalRevenue: Float!
+}
+
+input TransactionFiltersInput {
+  search: String
+  chargingHub: ID         
+  clientId: ID
+  city: String
+  status: TRANSACTION_STATUS
+  chargerId: String
+  paymentType: String
+  dateFilter: TransactionDateFilterInput
+}
+input TransactionDateFilterInput {
+  period: TRANSACTION_DATE_PERIOD
+  startDate: DateTime
+  endDate: DateTime
+}
+type ExportResponse {
+  base64String: String!
+  fileName: String!
+  mimeType: String!
+}
+
+
+# Input filter for fetching transactions by RFID tag
+input RfidTransactionsFilterInput {
+  rfidTagId: ID!
+  dateFilter: DateFilterInput
+  page: Int
+  limit: Int
+}
+
+# Response type including summary cards and paginated transaction nodes
+type RfidTransactionsSummary {
+  totalCredits: Float
+  totalDebit: Float
+  currentBalance: Float
+}
+
+type RfidTransactionNode {
+  id: ID!
+  gatewayTxnId: String
+  createdAt: String
+  updatedAt: String
+  amount: Float
+  refundAmount: Float
+  balanceAmount: Float
+  currency: String
+  status: String
+  type: String
+  invoiceUrl: String
+  chargingSession: ChargingSession
+}
+
+type RfidTransactionsResponse {
+  summary: RfidTransactionsSummary
+  nodes: [RfidTransactionNode!]!
+  totalCount: Int!
+  totalPages: Int!
+  currentPage: Int!
+}
+
+ 
+
+# -------------------------------------------------------------
+# Queries
+# -------------------------------------------------------------
+
+extend type Query {
+  TransactionRead(
+    id: ID
+    gatewayTxnId: String
+    status: String
+    take: PositiveInt
+    skip: Int
+  ): [Transaction!]!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  TransactionStats: TransactionStats!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  GetTransactions(
+    page: Int = 1
+    limit: Int = 10
+    filters: TransactionFiltersInput
+  ): PaginatedTransactionsResponse!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  GetTransactionsKPIs(
+    filters: TransactionFiltersInput
+  ): HubTransactionsKPIsResponse!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  
+  GetHubTransactionDetails(id: ID!): HubTransactionDetailResponse!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  ExportTransactions(
+    format: EXPORT_FORMAT! # "EXCEL" ya "PDF"
+    filters: TransactionFiltersInput
+  ): ExportResponse!
+  @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  getRfidTagTransactions(
+    filters: RfidTransactionsFilterInput!
+  ): RfidTransactionsResponse!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  ExportRfidTagTransactions(
+    format: EXPORT_FORMAT! # "EXCEL" ya "PDF"
+    filters: RfidTransactionsFilterInput!
+  ): ExportResponse!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+
+extend type Mutation {
+  TransactionCreate(
+    amount: Float!
+    currency: String
+    status: String
+    type: String
+    gateway: String
+    gatewayTxnId: String
+    orderId: ID
+    companyId: ID
+    customerProfileId: ID
+  ): Transaction!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}

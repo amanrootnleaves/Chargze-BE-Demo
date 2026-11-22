@@ -1,0 +1,87 @@
+type ChargingSession {
+  id: ID!
+  createdAt: String!
+  status: SESSION_STATUS!
+  startTime: String
+  endTime: String
+  energyLimit: Float
+  amountLimit: Float
+  energyConsumed: Float!
+  totalAmount: Float!
+  Charger: Charger!
+  CustomerProfile: CustomerProfile!
+  Transaction: Transaction
+}
+
+enum SESSION_STATUS {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+input StartChargingSessionInput {
+  chargerId: ID!
+  energyLimit: Float
+  amountLimit: Float
+}
+input UpdateChargingSessionInput {
+  status: SESSION_STATUS
+  energyLimit: Float
+  amountLimit: Float
+}
+input EVTransactionHistoryFilterInput {
+  status: SESSION_STATUS
+  month: Int
+  year: Int
+}
+type EVTransactionOverview {
+  totalSessions: Int!
+  totalEnergy: Float!
+  totalAmountSpent: Float!
+}
+type EVTransactionHistoryResponse {
+  overview: EVTransactionOverview!
+  sessions: [ChargingSession!]!
+}
+type EstimatedBill {
+  timeSlot: String!
+  sessionFees: Float!
+  unitRate: Float!
+  tax: Float!
+  total: Float!
+}
+type DeleteChargingSessionResponse {
+  id: ID!
+  isDeleted: Boolean!
+}
+
+extend type Mutation {
+  startChargingSession(input: StartChargingSessionInput!): ChargingSession!
+  stopChargingSession(sessionId: ID!): ChargingSession!
+  UpdateChargingSession(
+    sessionId: ID!
+    input: UpdateChargingSessionInput!
+  ): ChargingSession!
+    @isAuthenticated(accountType: [ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  DeleteChargingSession(sessionId: ID!): DeleteChargingSessionResponse!
+    @isAuthenticated(accountType: [ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+
+extend type Query {
+  getChargingSession(id: ID!): ChargingSession
+  getActiveChargingSession: ChargingSession
+  getAllChargingSessions: [ChargingSession!]!
+  EVTransactionHistory(
+    filter: EVTransactionHistoryFilterInput
+  ): EVTransactionHistoryResponse!
+  EVReceipt(id: ID!): ChargingSession!
+  getChargingEstimate(
+    chargerId: ID!
+    amountLimit: Float
+    energyLimit: Float
+  ): EstimatedBill!
+}

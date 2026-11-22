@@ -1,0 +1,25 @@
+{
+  "name": "servercache",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "development@rootandleaves.com",
+  "license": "ISC",
+  "description": "",
+  "scripts": {
+    "clean": "rimraf node_modules pnpm-lock.yaml",
+    "upgrade": "ncu -u",
+    "build::js": "babel ./ --out-dir ../../../.build/packages/dyna_modules/Cache/ --no-copy-ignored --root-mode upward",
+    "prebuild": "pnpm run clean",
+    "build": "pnpm run build::js"
+  },
+  "dependencies": {
+    "@ladjs/graceful": "^4.2.0",
+    "circular-json-es6": "^2.0.2",
+    "interval-promise": "^1.4.0",
+    "ioredis": "^5.3.2",
+    "lodash": "^4.17.21",
+    "ms": "^2.1.3",
+    "underscore": "^1.13.6",
+    "util": "^0.12.5"
+  }
+}

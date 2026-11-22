@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "AccountStationAccess" ADD COLUMN     "updatedAt" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP;

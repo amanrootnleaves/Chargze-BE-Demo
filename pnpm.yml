@@ -1,0 +1,24 @@
+dangerouslyAllowAllBuilds: true
+
+shamefullyHoist: true
+
+onlyBuiltDependencies:
+
+  - '@prisma/client'
+  - '@prisma/engines'
+  - argon2
+  - aws-sdk
+  - esbuild
+  - protobufjs
+  - sharp
+
+ignoredBuiltDependencies:
+  - '@apollo/protobufjs'
+  - core-js
+  - core-js-pure
+  - prisma
+  - tld-list
+  - unix-dgram
+
+overrides:
+  graphql: '16.8.0'

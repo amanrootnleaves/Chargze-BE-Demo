@@ -1,0 +1,383 @@
+type ChargingStation {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  name: String!
+  address: String
+  city: String!
+  state: String!
+  pincode: String!
+  latitude: String
+  longitude: String
+  status: String
+  powerTypes: [String!]!
+  amenities: [String!]!
+  rating: Float!
+  totalReviews: Int!
+  images: JSON
+  isFavorite: Boolean
+  type: String
+  ownership: String
+  accessType: String
+  stationId: String
+  onboardingDate: String
+  liveDate: String
+  closedDate: String
+  poc: String
+  pocEmail: String
+  pocMobile: String
+  emergencyContact: String
+  chargers: [Charger!]!
+  stationReviews: [StationReview!]!
+  weeklyHours: [WeeklyHour!]!
+  company: Company
+  openingTime: String
+  closingTime: String
+  isOpen24Hours: Boolean
+  holidaySchedule: JSON
+  addressLine1: String
+  addressLine2: String
+  Settings: StationSettings
+  Commercial: StationCommercial
+  Documents: [StationDocument!]
+  RemoteOperationConfig: RemoteOperationConfig
+  holidayHours: String
+  StationHours: [StationHours!]!
+  ownerId: ID
+  stationOwner: StationOwner
+}
+type RemoteOperationConfig {
+  id: ID!
+  connectorId: Int!
+  meterIntervalSeconds: Int!
+  selectedOperation: RemoteOperationType!
+}
+type WeeklyHour {
+  id: ID!
+  day: String!
+  openingTime: String
+  closingTime: String
+  is24Hours: Boolean!
+}
+input WeeklyHourInput {
+  day: String!
+  openingTime: String
+  closingTime: String
+  is24Hours: Boolean!
+}
+type StationHours {
+  id: ID!
+  dayOfWeek: Int!
+  isOpen24Hours: Boolean!
+  isClosed: Boolean!
+  openTime: String
+  closeTime: String
+}
+type Company {
+  id: ID!
+  displayName: String
+}
+
+type ChargingStationActionResponse {
+  statusMsg: String
+  message: String
+}
+
+type Charger {
+  id: ID!
+  name: String
+  power: String
+  status: String
+  slot: String
+  chargeboxId: String
+  lastConnected: DateTime
+  connectors: [Connector!]!
+  chargingStation: ChargingStation!
+  chargingType: String
+  chargingId: String
+}
+input ConnectorInput {
+  id: ID
+  name: String!
+  connectorType: String!
+  status: CONNECTOR_STATUS
+  power: String
+  voltage: Float
+  price: Float
+  isPublic: Boolean
+}
+type Connector {
+  id: ID!
+  name: String!
+  connectorType: String!
+  status: String!
+  power: String
+  voltage: Float
+  price: Float
+  isPublic: Boolean
+}
+type StationSettings {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  meterInterval: Int
+  selectedOperations: [String]!
+  websocketUrl: String
+  payWithCard: Boolean
+  payWithWallet: Boolean
+  enableNotification: Boolean
+  notificationRecipients: [String]!
+  toleranceInWords: Int
+  isChargerPublic: Boolean
+  notifyEvents: [StationNotificationEvent!]!
+}
+type StationCommercial {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  transactionChargeType: String
+  transactionChargeValue: Float
+  payoutCycle: String
+  payoutDay: String
+}
+type StationDocument {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  documentType: String!
+  fileUrl: String!
+  fileName: String
+}
+type GeneratedIdsResponse {
+  nextStationId: String!
+  nextChargingId: String!
+  nextFleetId: String!
+  nextRfidTagId: String!
+}
+type StationReview {
+  id: ID!
+  rating: Int!
+  comment: String
+  createdAt: DateTime!
+  CustomerProfile: StationReviewCustomerProfile
+}
+
+type StationReviewCustomerProfile {
+  id: ID!
+  displayName: String
+  thumbnailStoredAt: JSON
+}
+type StationLiveAvailability {
+  chargers: [LiveCharger!]!
+}
+type LiveCharger {
+  id: ID!
+  name: String!
+  status: String!
+  connectors: [LiveConnector!]!
+}
+type LiveConnector {
+  id: ID!
+  name: String!
+  connectorType: String!
+  status: String!
+  power: String
+}
+extend type Query {
+  searchChargingStations(input: ChargingStationSearchInput): [ChargingStation!]!
+  getChargingStationDetails(id: ID!): ChargingStation
+  getRecentChargingStations: [ChargingStation!]!
+  getFavoriteStations: [ChargingStation!]!
+  getAllChargingStations(
+    dateFilter: DateFilterInput
+    filter: ChargingStationFilterInput
+    page: Int
+    limit: Int
+  ): [ChargingStation!]!
+  exportChargingStations(
+    dateFilter: DateFilterInput
+    format: EXPORT_FORMAT!
+  ): ExportResponse!
+    @isAuthenticated(accountType: [ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  getStationLiveAvailability(id: ID!): StationLiveAvailability!
+  getNewGeneratedIds: GeneratedIdsResponse!
+    @isAuthenticated(accountType: [ADMIN])
+  "Weekly schedule for one station, ordered Sunday to Saturday."
+  getStationHours(stationId: ID!): [StationHours!]!
+
+  getChargingStationKpiStats: ChargingStationKpiStats!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+
+input ChargingStationSearchInput {
+  query: String!
+}
+
+input ChargingStationFilterInput {
+  stationId: ID
+  stationOwnerId: ID
+  stationType: StationType
+  ownership: StationOwnership
+  accessType: StationAccessType
+  status: STATION_STATUS
+  search: String
+}
+
+input ChargerInput {
+  id: ID
+  name: String
+  status: String
+  slot: String
+  connectors: [ConnectorInput!]
+  chargingType: String
+}
+input StationSettingsInput {
+  meterInterval: Int
+  selectedOperations: [String!]
+  websocketUrl: String
+  payWithCard: Boolean
+  payWithWallet: Boolean
+  enableNotification: Boolean
+  notificationRecipients: [String!]
+  notifyEvents: [StationNotificationEvent!]
+  toleranceInWords: Int
+  isChargerPublic: Boolean
+}
+input StationCommercialInput {
+  transactionChargeType: String
+  transactionChargeValue: Float
+  payoutCycle: String
+  payoutDay: String
+}
+input StationDocumentInput {
+  id: ID
+  documentType: String!
+  fileUrl: String!
+  fileName: String
+}
+input RemoteOperationInput {
+  connectorId: Int!
+  meterIntervalSeconds: Int!
+  selectedOperation: RemoteOperationType!
+}
+
+input CreateChargingStationInput {
+  name: String!
+  address: String
+  city: String!
+  state: String!
+  pincode: String!
+  latitude: String
+  longitude: String
+  status: String!
+  powerTypes: [String!]
+  amenities: [String!]!
+  WeeklyHours: [WeeklyHourInput!]
+  rating: Float
+  totalReviews: Int
+  images: JSON
+  type: String
+  ownership: String
+  accessType: String
+  onboardingDate: String
+  liveDate: String
+  closedDate: String
+  poc: String
+  pocEmail: String
+  pocMobile: String
+  emergencyContact: String
+  Chargers: [ChargerInput!]
+  companyId: ID
+  openingTime: String
+  closingTime: String
+  isOpen24Hours: Boolean
+  holidaySchedule: JSON
+  addressLine1: String
+  addressLine2: String
+  settings: StationSettingsInput
+  ownerId: ID
+  commercial: StationCommercialInput
+  documents: [StationDocumentInput!]
+  remoteOperation: RemoteOperationInput
+}
+
+input UpdateChargingStationInput {
+  name: String
+  address: String
+  city: String
+  state: String
+  pincode: String
+  latitude: String
+  longitude: String
+  status: String
+  powerTypes: [String!]
+  amenities: [String!]
+  WeeklyHours: [WeeklyHourInput!]
+  images: JSON
+  type: String
+  ownership: String
+  accessType: String
+  stationId: String
+  onboardingDate: String
+  liveDate: String
+  closedDate: String
+  poc: String
+  pocEmail: String
+  pocMobile: String
+  emergencyContact: String
+  companyId: ID
+  openingTime: String
+  closingTime: String
+  isOpen24Hours: Boolean
+  holidaySchedule: JSON
+  addressLine1: String
+  addressLine2: String
+  settings: StationSettingsInput
+  commercial: StationCommercialInput
+  documents: [StationDocumentInput!]
+  Chargers: [ChargerInput!]
+  remoteOperation: RemoteOperationInput
+  ownerId: ID
+}
+
+input StationHoursInput {
+  "0 = Sunday … 6 = Saturday."
+  dayOfWeek: Int!
+  isOpen24Hours: Boolean
+  isClosed: Boolean
+  openTime: String
+  closeTime: String
+}
+type KpiMetric {
+  value: Float!
+  percentageChange: Float!
+  isIncrease: Boolean!
+}
+
+type ChargingStationKpiStats {
+  totalChargingStations: KpiMetric!
+  newChargingStations: KpiMetric!
+  totalTransactions: KpiMetric!
+  faultyChargers: KpiMetric!
+  totalRevenue: KpiMetric!
+}
+
+extend type Mutation {
+  createChargingStation(input: CreateChargingStationInput!): ChargingStation!
+    @isAuthenticated(accountType: [ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  updateChargingStation(
+    id: ID!
+    input: UpdateChargingStationInput!
+  ): ChargingStation!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  deleteChargingStation(id: ID!): ChargingStationActionResponse!
+  toggleFavoriteStation(stationId: ID!): ChargingStation!
+  setStationHours(
+    stationId: ID!
+    input: [StationHoursInput!]!
+  ): [StationHours!]!
+}

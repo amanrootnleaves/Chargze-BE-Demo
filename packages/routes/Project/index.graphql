@@ -1,0 +1,56 @@
+#
+# GRAPH
+#
+type Project {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  displayName: String
+  description: String
+  account: JSON
+  message: String
+  status: String
+  ProjectEmployee: [ProjectEmployee]
+  _totalCount: Int
+}
+type ProjectEmployee {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  Account: [Account]
+  Project: Project
+}
+
+#
+# RESOLVER
+#
+extend type Mutation {
+  ProjectCreate(
+    displayName: String!
+    description: String!
+    account: JSON
+  ): Project!
+  @isAuthenticated(accountType: [COMPANY])
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  ProjectUpdate(
+    projectId: ID!
+    displayName: String
+    description: String,
+    account: JSON
+  ): Project!
+  @isAuthenticated(accountType: [COMPANY])
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  ProjectDelete(projectId: ID!): Project! @isAuthenticated(accountType: [COMPANY]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  ProjectUpload(projectId: ID!, thumbnailStoredAt: Image!): Project! @isAuthenticated(accountType: [COMPANY]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+extend type Query {
+  ProjectRead(
+    companyId: ID
+    projectId: ID
+    displayNameToSearch: String
+    sort: JSON
+    filter: JSON
+    take: PositiveInt
+    skip: Int
+  ): [Project!]!
+}

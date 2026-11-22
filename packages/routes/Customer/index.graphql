@@ -1,0 +1,251 @@
+#
+# GRAPH
+#
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  VIP
+}
+
+type CustomerProfile {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  isDeleted: Boolean
+  customerCode: String
+  status: CustomerStatus
+  totalOrders: Int
+  totalSpend: Float
+  lastOrderAt: DateTime
+  lastLoginAt: DateTime
+
+  gstin: String
+  walletBalance: Float
+  addressLine1: String
+  addressLine2: String
+  city: String
+  state: String
+  pincode: String
+  Account: Account
+  Company: Company
+  Orders: [Order]
+  ChargingSessions: [ChargingSession] # Create this type if not exists
+  CustomerVehicles: [CustomerVehicle] # Create this type if not exists
+  RfidTags: [RfidTag]
+  _totalCount: Int
+  message: String
+  statusMsg: String
+}
+type AdminCustomerKPIs {
+  totalCustomers: Int
+  totalCustomersGrowth: Float
+  appDownloaded: Int
+  appDownloadedGrowth: Float
+  totalEnergyKw: Float
+  totalEnergyGrowth: Float
+  refundAmount: Float
+  refundAmountGrowth: Float
+  totalRevenue: Float
+  totalRevenueGrowth: Float
+}
+
+# 3. Admin Query mein KPI wali API add karo
+
+type CustomerStats {
+  totalCustomers: Int
+  activeCustomers: Int
+  inactiveCustomers: Int
+  vipCustomers: Int
+  totalCustomersPercentage: Float
+  activeCustomersPercentage: Float
+  inactiveCustomersPercentage: Float
+  vipCustomersPercentage: Float
+  activeUsersInLast30Mins: Int
+}
+
+type ChartDataPoint {
+  name: String
+  value: Float
+}
+
+type MetricChartData {
+  activeCustomers: [ChartDataPoint]
+  repeatCustomers: [ChartDataPoint]
+  shopVisitors: [ChartDataPoint]
+  conversionRate: [ChartDataPoint]
+}
+
+type CustomerOverviewData {
+  activeCustomers: Int
+  repeatCustomers: Int
+  shopVisitors: Int
+  conversionRate: Float
+  chartData: MetricChartData
+}
+type UpdatedCustomer {
+  fullName: String
+  email: String
+  phoneNumber: String
+  gstin: String
+}
+input DateFilterInput {
+  period: DATE_PERIOD
+  startDate: DateTime
+  endDate: DateTime
+}
+
+# Main Response Type for Single Customer Fetch
+type CustomerDetailsResponse {
+  id: ID!
+  customerCode: String # UI par dikhne wala ID (e.g., 001)
+  # 1. Top Summary Cards
+  totalSessions: Int
+  totalEnergy: Float # Pehla card (e.g., 2200)
+  totalEnergyKw: Float # Dusra card (e.g., 1637kW)
+  # 2. Customer Profile & Shipping Details (Shared Fields)
+  Account: AccountDetails
+  gstin: String
+  addressLine1: String
+  addressLine2: String
+  city: String
+  state: String
+  pincode: String
+  status: String # e.g., "Active"
+  # 3. Charging Session Details (Latest/Recent Session)
+  recentChargingSession: ChargingSessionDetails
+
+  # 4. Trip Details (Saved Stations)
+  savedTrips: [TripDetail!]
+}
+
+# Nested Account Type
+type AccountDetails {
+  id: ID!
+  fullName: String
+  phoneNumber: String
+  email: String
+}
+
+# Nested Charging Session Type
+type ChargingSessionDetails {
+  id: ID!
+  stationName: String
+  status: String # e.g., "Completed"
+  sessionDate: String # e.g., "22nd August 2024"
+  chargingKw: Float # e.g., 20.8
+  totalSpend: Float # e.g., 466.00
+  rfidStatus: String # e.g., "112233 - Linked"
+  walletStatus: String # e.g., "1344.00 - Linked"
+  invoiceUrl: String # Download link ke liye
+  paymentDetails: String # e.g., "Scan"
+  offerApplied: String # e.g., "FIRSTUSER100"
+  vehicleName: String # e.g., "Tata Nexon EV"
+  registrationNumber: String # e.g., "DLSF 1917 NHF"
+  chargerType: String # e.g., "CCS2"
+}
+
+# Nested Trip Details Type
+type TripDetail {
+  id: ID!
+  source: String # e.g., "Vishwas Nagar"
+  destination: String # e.g., "Muzaffarnagar"
+}
+
+#
+# RESOLVER
+#
+extend type Query {
+  CustomerRead(
+    customerId: ID
+    customerCode: String
+    status: CustomerStatus
+    search: String
+    stationId: ID
+    dateFilter: DateFilterInput
+    take: PositiveInt
+    skip: Int
+  ): [CustomerProfile!]!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  CustomerExport(
+    format: EXPORT_FORMAT!
+    customerId: ID
+    customerCode: String
+    status: CustomerStatus
+    search: String
+    stationId: ID
+    dateFilter: DateFilterInput
+  ): ExportResponse!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  CustomerStats: CustomerStats!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  CustomerOverview(timeframe: String!): CustomerOverviewData!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  CustomerKPIStats: AdminCustomerKPIs!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  CustomerDetails(customerId: ID!): CustomerDetailsResponse!
+    @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+
+extend type Mutation {
+  CustomerCreate(
+    fullName: String!
+    email: String!
+    phoneNumber: String
+    address: String
+    password: String
+    gstin: String
+    addressLine1: String
+    addressLine2: String
+    city: String
+    state: String
+    pincode: String
+    walletBalance: Float
+    customerCode: String
+    status: CustomerStatus
+    thumbnailStoredAt: JSON
+  ): CustomerProfile! @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  CustomerDelete(customerId: ID!): CustomerProfile!
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  CheckPincodeDelivery(productId: ID!, pincode: String!): JSON!
+    @isAuthenticated(accountType: [CUSTOMER, ADMIN, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  CustomerUpdate(
+    customerId: ID!
+    fullName: String!
+    email: String!
+    phoneNumber: String!
+    gstin: String
+  ): CustomerProfile!
+    @isAuthenticated(accountType: [CUSTOMER, ADMIN, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  UpdateCustomerByAdmin(
+    customerId: ID!
+    fullName: String
+    email: EmailAddress
+    phoneNumber: String
+    gstin: String
+    addressLine1: String
+    addressLine2: String
+    city: String
+    state: String
+    pincode: String
+    status: CustomerStatus
+  ): CustomerProfile!
+    @isAuthenticated(accountType: [ADMIN, EMPLOYEE])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}

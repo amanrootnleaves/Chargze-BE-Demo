@@ -1,0 +1,37 @@
+{
+  "source": {
+    "exclude": ["node_modules", "prisma", "pgdata"],
+    "includePattern": ".+\\.js(doc|x)?$",
+    "excludePattern": "(node_modules|docs)"
+  },
+  "sourceType": "script",
+  "opts": {
+    "template": "node_modules/jsdoc-template",
+    "destinationAddress": "./docs/",
+    "recurse": true,
+    "verbose": true,
+    "encoding": "utf8",
+    "readme": "README.md"
+  },
+  "tags": {
+    "allowUnknownTags": true,
+    "dictionaries": ["jsdoc","closure"]
+  },
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": false,
+    "referenceTitle": "Server Documentation",
+    "disableSort": false,
+    "collapse": false,
+    "resources": {
+      "graphql": "https://www.graphql.com/tutorials/",
+      "prisma": "https://www.prisma.io/",
+      "yoga server": "https://github.com/prisma-labs/graphql-yoga"
+    },
+    "search": {
+        "apiKey": "your-api-key",
+        "indexName": "Your index name. Defaults to braintree.",
+        "hitsPerPage": "Number of Results to show. Defaults to 7."
+    }
+  }
+}

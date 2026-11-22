@@ -1,0 +1,22 @@
+enum DiscountType {
+  CHARGING
+  SIGNUP
+}
+
+enum DiscountScope {
+  PERCENTAGE
+  FIXED
+}
+
+enum PromoCodeStatus {
+  ACTIVE
+  INACTIVE
+  SCHEDULED
+  EXPIRED
+}
+enum PromoCodeQueryStatus {
+  ACTIVE
+  INACTIVE
+  SCHEDULED
+  EXPIRED
+}

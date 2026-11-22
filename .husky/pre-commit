@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+branch="$(git rev-parse --abbrev-ref HEAD)"
+if echo "$branch" | grep -q "release"; then
+	echo "Found release branch. building up the code."
+	pnpm run build
+fi
+

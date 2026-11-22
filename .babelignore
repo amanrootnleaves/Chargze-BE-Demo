@@ -1,0 +1,9 @@
+**/node_modules/**
+**/pgdata/**
+**/uploads/**
+**/.build/**
+**/.husky/**
+**/.idea/**
+**/dist/**
+credential.json
+pnpm-lock.yaml

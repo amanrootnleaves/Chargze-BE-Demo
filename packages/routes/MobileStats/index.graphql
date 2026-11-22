@@ -1,0 +1,115 @@
+extend type Query {
+  DashboardSummary(
+    dateFilter: DateFilterInput
+    startDate: DateTime
+    endDate: DateTime
+  ): DashboardSummaryResponse!
+    @isAuthenticated(accountType: [ADMIN, COMPANY])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  DashboardAnalytics(
+    dateFilter: DateFilterInput
+    startDate: DateTime
+    endDate: DateTime
+  ): DashboardAnalyticsResponse!
+    @isAuthenticated(accountType: [ADMIN, COMPANY])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  DashboardMap: DashboardMapResponse!
+    @isAuthenticated(accountType: [ADMIN, COMPANY])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  DashboardStats: DashboardStatsResponse!
+    @isAuthenticated(accountType: [ADMIN, COMPANY])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+
+type DashboardSummaryResponse {
+  licenseStatus: LicenseStatus
+
+  faultConnectors: Int!
+  faultConnectorsChangePercent: Float!
+  preparingConnectors: Int!
+  maintenanceChargers: Int!
+  activeChargingSessions: Int!
+
+  totalDevices: Int!
+  onlineDevices: Int!
+  offlineDevices: Int!
+  activeStations: Int!
+  activeStationsChangePercent: Float!
+
+  chargingSessions: Int!
+  sessionsToday: Int!
+  sessionsYesterday: Int!
+  sessionsTodayChangePercent: Float!
+  totalRevenue: Float!
+  previousMonthRevenue: Float!
+  revenueChangePercent: Float!
+  newUsers: Int!
+  newUsersChangePercent: Float!
+  newChargingPoints: Int!
+  newChargingPointsChangePercent: Float!
+  newStationOwners: Int!
+  newStationOwnersChangePercent: Float!
+  totalEnergy: Float!
+  energyChangePercent: Float!
+  stationModels: [DashboardStationModel!]!
+  recentSessions: [DashboardRecentSession!]!
+}
+
+type DashboardStationModel {
+  type: String!
+  count: Int!
+}
+
+type DashboardRecentSession {
+  id: ID!
+  customerName: String!
+  stationName: String!
+  energyDelivered: Float!
+  amount: Float!
+  status: SESSION_STATUS!
+  startTime: DateTime
+}
+
+type LicenseStatus {
+  status: String!
+  expiryDate: DateTime
+  supportEmail: String
+  supportPhone: String
+}
+
+type DashboardAnalyticsResponse {
+  cumulativeUsage: [UsagePoint!]!
+  energyDelivered: [UsagePoint!]!
+  revenueOverview: [UsagePoint!]!
+}
+
+type UsagePoint {
+  label: String!
+  value: Float!
+}
+
+type DashboardMapStation {
+  id: ID!
+  stationId: ID! @deprecated(reason: "Use id instead.")
+  stationName: String!
+  latitude: Float
+  longitude: Float
+  amenities: [String!]!
+  address: String
+  status: String!
+}
+
+type DashboardMapResponse {
+  stations: [DashboardMapStation!]!
+  totalCount: Int!
+}
+
+type DashboardMetric {
+  key: String!
+  changePercent: Float!
+}
+
+type DashboardStatsResponse {
+  metrics: [DashboardMetric!]!
+}

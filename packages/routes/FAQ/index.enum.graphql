@@ -1,0 +1,10 @@
+#
+# ENUM
+#
+enum FAQ_CATEGORY{
+GENERAL
+STATION
+RFID
+}
+
+

@@ -1,0 +1,50 @@
+#
+# GRAPH
+#
+type CompanyFeatureEntry {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  Feature: Feature
+  Project: Project
+  data: JSON
+  Account: Account
+  Company: Company
+  file: File
+  CompanyFeatureEntryHistory: [CompanyFeatureEntryHistory]
+  message: String
+  status: String
+  _totalCount: Int
+  _isCreateAllowed: Boolean
+  _fields: JSON
+}
+type CompanyFeatureEntryHistory {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  Feature: Feature
+  Project: Project
+  fromData: JSON
+  toData: JSON
+  CompanyFeatureEntry__fk__: String
+  CompanyFeatureEntry: CompanyFeatureEntry
+  ChangedByAccount: Account
+  ChangedByAccount__fk__: String
+  message: String
+  status: String
+  _totalCount: Int
+}
+
+#
+# RESOLVER
+#
+extend type Mutation {
+  CompanyFeatureEntryCreate(projectId: ID!, featureId: ID!, data: JSON!): CompanyFeatureEntry! @isAuthenticated(accountType: [COMPANY, EMPLOYEE, VENDOR]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  CompanyFeatureEntryUpdate(companyFeatureEntryId: ID!, data: JSON!): CompanyFeatureEntry! @isAuthenticated(accountType: [COMPANY, EMPLOYEE, VENDOR]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  CompanyFeatureEntryDelete(companyFeatureEntryId: ID!): CompanyFeatureEntry! @isAuthenticated(accountType: [COMPANY, EMPLOYEE, VENDOR]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  CompanyFeatureEntryUpload(file: Image!, dimensionsToChopIn: JSON): CompanyFeatureEntry! @isAuthenticated(accountType: [COMPANY, EMPLOYEE, VENDOR]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+extend type Query {
+  CompanyFeatureEntryRead(projectId: ID!, featureId: ID, companyFeatureEntryId: ID, sort: JSON, filter: JSON, startDate: DateTime, endDate: DateTime, take: PositiveInt, skip: Int): [CompanyFeatureEntry!]! @isAuthenticated(accountType: [COMPANY, EMPLOYEE, VENDOR]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  CompanyFeatureEntryAudit(companyFeatureEntryId: ID!, filter: JSON, sort: JSON, startDate: DateTime, endDate: DateTime, take: PositiveInt, skip: Int): [CompanyFeatureEntryHistory!]! @isAuthenticated(accountType: [COMPANY, EMPLOYEE, VENDOR]) @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}

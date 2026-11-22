@@ -1,0 +1,21 @@
+type Invitation {
+  id: ID!
+  createdAt: String!
+  phoneNumber: String!
+  friendName: String
+  status: String
+  invitationLink: String
+}
+
+input InvitationCreateInput {
+  phoneNumber: String!
+  friendName: String
+}
+
+extend type Query {
+  InvitationRead: [Invitation] @isAuthenticated
+}
+
+extend type Mutation {
+  InvitationCreate(input: InvitationCreateInput!): Invitation @isAuthenticated
+}

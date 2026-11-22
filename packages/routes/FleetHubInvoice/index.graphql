@@ -1,0 +1,125 @@
+type FleetHubInvoiceMetricsItem {
+  count: Int!
+  amount: Float!
+}
+
+type FleetHubInvoiceMetrics {
+  totalInvoices: Int!
+  growthPercentage: Float!
+  paid: FleetHubInvoiceMetricsItem!
+  pending: FleetHubInvoiceMetricsItem!
+  overdue: FleetHubInvoiceMetricsItem!
+}
+
+type FleetHubInvoice {
+  id: String!
+  invoiceNumber: String!
+  sessionId: ID
+  billingPeriod: String!
+  billingStartDate: DateTime!
+  billingEndDate: DateTime!
+  dueDate: DateTime!
+  totalSessions: Int!
+  totalEnergy: Float!
+  subtotal: Float!
+  gstAmount: Float!
+  totalAmount: Float!
+  status: INVOICE_STATUS!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  fleetOwner__fk__: String!
+  chargingStation__fk__: String!
+  FleetOwner: FleetOwner
+  ChargingStation: ChargingStation
+}
+
+input FleetHubInvoicesFilterInput {
+  search: String
+  fleetOwnerId: String
+  chargingStationId: String
+  status: INVOICE_STATUS
+  dateFilter: FleetHubInvoiceDateFilterInput
+}
+input FleetHubInvoiceDateFilterInput {
+  period: DATE_PERIOD
+  startDate: DateTime
+  endDate: DateTime
+}
+
+type FleetHubInvoicesResponse {
+  items: [FleetHubInvoice!]!
+  totalCount: Int!
+  metrics: FleetHubInvoiceMetrics!
+}
+type EVReceiptDetailResponse {
+  # Header & Dark Box
+  invoiceNumber: String!
+  invoiceDate: String!
+  transactionId: String!
+  gstin: String
+
+  # Sold By (Client Info)
+  driverName: String!
+  driverAddress: String
+  driverMobile: String
+  driverEmail: String
+
+  # Charging Station Info
+  stationId: String!
+  stationAddress: String
+  connectorType: String!
+
+  # Session Table (Middle)
+  stationPointId: String! # H01_DC02
+  startTime: String
+  endTime: String
+  duration: String # "1h 13m" (Backend se calculate hoke aayega)
+  energyConsumed: Float!
+  unitRate: Float! # Connector model se aayega
+  sessionAmount: Float!
+
+  # Payment Summary (Footer)
+  paymentMethod: String
+  subtotal: Float!
+  cgst: Float!
+  sgst: Float!
+  totalGst: Float!
+  totalAmountPayable: Float!
+  paymentDate: String
+}
+type ExportResponse {
+  base64String: String!
+  fileName: String!
+  mimeType: String!
+}
+
+extend type Query {
+  FleetHubInvoices(
+    filter: FleetHubInvoicesFilterInput
+    skip: Int
+    take: Int
+  ): FleetHubInvoicesResponse!
+   @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+   @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  FleetHubInvoiceById(id: String!): FleetHubInvoice
+   @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+   @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  getEVReceiptDetail(sessionId: ID!): EVReceiptDetailResponse!
+   @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+   @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  exportFleetHubInvoices(
+    filter: FleetHubInvoicesFilterInput
+    format: EXPORT_FORMAT!
+  ): ExportResponse!
+   @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+   @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+
+extend type Mutation {
+  FleetHubInvoiceMarkAsPaid(id: String!): FleetHubInvoice!
+   @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE])
+   @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}

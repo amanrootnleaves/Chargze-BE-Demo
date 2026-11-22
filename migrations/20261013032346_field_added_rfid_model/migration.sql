@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "RfidTag" ADD COLUMN     "status" TEXT NOT NULL DEFAULT 'ACTIVE';

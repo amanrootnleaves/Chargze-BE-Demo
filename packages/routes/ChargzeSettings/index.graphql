@@ -1,0 +1,108 @@
+type PlatformSetting {
+  id: ID!
+  platformName: String
+  email: String
+  logoUrl: String
+  pocName: String
+  pocMobile: String
+  supportPhone: String
+  website: String
+  addressLine1: String
+  addressLine2: String
+  city: String
+  pincode: String
+  googlePlayUrl: String
+  appStoreUrl: String
+  referralBaseUrl: String
+  createdAt: String
+  updatedAt: String
+}
+
+input UpdatePlatformSettingInput {
+  platformName: String
+  email: String
+  logoUrl: String
+  pocName: String
+  pocMobile: String
+  supportPhone: String
+  website: String
+  addressLine1: String
+  addressLine2: String
+  city: String
+  pincode: String
+  googlePlayUrl: String
+  appStoreUrl: String
+  referralBaseUrl: String
+}
+
+type PaymentGatewayConfig {
+  id: ID!
+  gatewayName: GatewayName!
+  isActive: Boolean!
+  apiKey: String
+  apiSecret: String
+  isLive: Boolean!
+  webhookVerified: Boolean!
+  createdAt: String
+  updatedAt: String
+}
+
+input ConfigurePaymentGatewayInput {
+  gatewayName: GatewayName!
+  isActive: Boolean!
+  apiKey: String
+  apiSecret: String
+  isLive: Boolean
+  webhookVerified: Boolean
+}
+
+
+
+type ThirdPartyIntegration {
+  id: ID!
+  serviceName: ServiceName!
+  isConnected: Boolean!
+  configData: String
+  createdAt: String
+  updatedAt: String
+}
+
+input ConfigureThirdPartyIntegrationInput {
+  serviceName: ServiceName!
+  isConnected: Boolean!
+  configData: String
+}
+
+ 
+
+ 
+
+extend type Query {
+  getPlatformSetting: PlatformSetting
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  getPaymentGateways: [PaymentGatewayConfig!]!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  getThirdPartyIntegrations: [ThirdPartyIntegration!]!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+
+extend type Mutation {
+  updatePlatformSetting(input: UpdatePlatformSettingInput!): PlatformSetting!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+  configurePaymentGateway(
+    input: ConfigurePaymentGatewayInput!
+  ): PaymentGatewayConfig!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+
+ configureThirdPartyIntegration(input: ConfigureThirdPartyIntegrationInput!): ThirdPartyIntegration!
+    @isAuthenticated(accountType: [COMPANY, EMPLOYEE, ADMIN])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}

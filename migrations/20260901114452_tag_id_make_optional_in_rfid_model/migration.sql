@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "RfidTag" ALTER COLUMN "tagId" DROP NOT NULL;

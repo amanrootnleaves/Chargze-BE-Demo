@@ -1,0 +1,4 @@
+{
+  "PARENT_ACCOUNT_NOT_FOUND": "Parent account not found for given accountId.",
+  "FAILED_TO_FIND_ACCOUNT": "Failed to find account for given accountId."
+}

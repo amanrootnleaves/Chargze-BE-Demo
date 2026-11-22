@@ -1,0 +1,5 @@
+{
+  "COMPANY_NOT_FOUND": "Company not found.",
+  "FAILED_TO_UPSERT_ACCOUNT_DIRECTORY": "Failed to upsert account directory.",
+  "FAILED_TO_FIND_ACCOUNT": "Failed to find account."
+}

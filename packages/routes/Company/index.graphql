@@ -1,0 +1,65 @@
+#
+# GRAPH
+#
+type Company {
+  id: ID
+  createdAt: DateTime
+  updatedAt: DateTime
+  displayName: String
+  Gst: [Gst]
+  Account: Account
+  message: String
+  status: String
+}
+
+#
+# RESOLVER
+#
+extend type Mutation {
+  CompanyCreate(
+    displayName: String!
+    gstIn: String!
+    address: String!
+    phoneNumber: String!
+    country: JSONObject!
+    state: JSONObject!
+    email: EmailAddress!
+    password: String!
+  ): Company!
+  @isAuthenticated(accountType: [ADMIN])
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  CompanyUpdate(
+    companyId: ID!
+    displayName: String!
+    address: String!
+    phoneNumber: String!
+  ): Company!
+  @isAuthenticated(accountType: [ADMIN])
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  CompanyDelete(companyId: ID!): Company!
+  @isAuthenticated(accountType: [ADMIN])
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}
+extend type Query {
+  CompanyRead(
+    companyId: ID
+    accountId: ID
+    displayNameToSearch: String
+    take: PositiveInt
+    skip: Int
+  ): [Company!]!
+  @isAuthenticated(accountType: [ADMIN, COMPANY, EMPLOYEE, VENDOR])
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  CompanyOfAccount(accountId: ID): [Company!]!
+  @isAuthenticated(accountType: [EMPLOYEE, VENDOR])
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  CompanyVendorRead(displayNameToSearch: String, take: PositiveInt, skip: Int): [Account!]!
+  @isAuthenticated(accountType: [COMPANY])
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  CompanyEmployeeRead(employeeToSearch: String!, take: PositiveInt, skip: Int): [Account!]!
+    @isAuthenticated(accountType: [COMPANY])
+    @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+  CompanyAggregate(aggregate: JSON, mode: [String], take: PositiveInt, skip: Int): Company!
+  @isAuthenticated(accountType: [ADMIN])
+  @rateLimit(window: "1s", max: 20, message: "RATE_LIMIT")
+}

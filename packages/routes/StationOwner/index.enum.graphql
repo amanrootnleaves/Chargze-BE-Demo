@@ -1,0 +1,23 @@
+#
+# ENUM
+#
+enum PARTNER_TYPE {
+  FRANCHISE
+  DIRECT
+}
+enum OWNER_STATUS {
+  ACTIVE
+  INACTIVE
+}
+enum OwnerProfileStatus {
+  INCOMPLETE
+  COMPLETED
+  CLOSED
+}
+enum OwnerDatePeriod {
+  TODAY
+  WEEK
+  MONTH
+  HALF_YEAR
+  YEAR
+}
