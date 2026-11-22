@@ -19,7 +19,7 @@ const _Server = async () => {
 
     const _globalsToExport = {
       CONFIG_RC: {
-        httpPort: parseInt(process.env.APP_PORT) || 4000,
+        httpPort: parseInt(process.env.PORT || process.env.APP_PORT, 10) || 4000,
         filemanager: {
           endpoint: "https://blr1.digitaloceanspaces.com",
           bucketname: "rootandleaves",
