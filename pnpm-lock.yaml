@@ -195,9 +195,6 @@ importers:
       babel-plugin-inline-json-import:
         specifier: 0.3.2
         version: 0.3.2
-      babel-plugin-minify-builtins:
-        specifier: 0.4.3
-        version: 0.4.3
       babel-plugin-minify-dead-code-elimination:
         specifier: ^0.5.2
         version: 0.5.2
@@ -4109,9 +4106,6 @@ packages:
     peerDependencies:
       eslint: '>= 4.12.1'
 
-  babel-helper-evaluate-path@0.4.3:
-    resolution: {integrity: sha512-cSk8Y9AXvDonb+tl1XU25OHjWLtDi/mDUMLYOp3kBKK4hJlgMgnqqCTX1cXm/gVaHhmzhb+SIHQM34OyJJQgZw==}
-
   babel-helper-evaluate-path@0.5.0:
     resolution: {integrity: sha512-mUh0UhS607bGh5wUMAQfOpt2JX2ThXMtppHRdRU1kL7ZLRWIXxoV2UIV1r2cAeeNeU1M5SB5/RSUgUxrK8yOkA==}
 
@@ -4148,9 +4142,6 @@ packages:
 
   babel-plugin-inline-json-import@0.3.2:
     resolution: {integrity: sha512-QNNJx08KjmMT25Cw7rAPQ6dlREDPiZGDyApHL8KQ9vrQHbrr4PTi7W8g1tMMZPz0jEMd39nx/eH7xjnDNxq5sA==}
-
-  babel-plugin-minify-builtins@0.4.3:
-    resolution: {integrity: sha512-wcrvdoH7rexixrOAbYlalgUupXtiTupbLSTyszMr5WH66Vg4s5dlTgDCFfwbtNXJHCV8sM0zr1Ze5ID1uvypQQ==}
 
   babel-plugin-minify-builtins@0.5.0:
     resolution: {integrity: sha512-wpqbN7Ov5hsNwGdzuzvFcjgRlzbIeVv1gMIlICbPj0xkexnfoIDe7q+AZHMkQmAE/F9R5jkrB6TLfTegImlXag==}
@@ -13607,8 +13598,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  babel-helper-evaluate-path@0.4.3: {}
-
   babel-helper-evaluate-path@0.5.0: {}
 
   babel-helper-flip-expressions@0.4.3: {}
@@ -13639,10 +13628,6 @@ snapshots:
   babel-plugin-inline-json-import@0.3.2:
     dependencies:
       decache: 4.6.2
-
-  babel-plugin-minify-builtins@0.4.3:
-    dependencies:
-      babel-helper-evaluate-path: 0.4.3
 
   babel-plugin-minify-builtins@0.5.0: {}
 

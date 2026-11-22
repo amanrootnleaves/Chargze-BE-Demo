@@ -33,7 +33,7 @@ module.exports = __babel => {
     ],
     'env': {
       'production': {
-        'presets': ['minify'],
+        'presets': [['minify', { 'builtIns': false }]],
         'plugins': [
           'transform-remove-console',
           'minify-dead-code-elimination'
