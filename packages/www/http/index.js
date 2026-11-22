@@ -118,7 +118,7 @@ const _Server = createYoga({
 
 _Express.use(
   Helmet({
-    contentSecurityPolicy: "production" === process.env.NODE_ENV ? null : false,
+    contentSecurityPolicy: "production" === process.env.NODE_ENV ? true : false,
   }),
 );
 
