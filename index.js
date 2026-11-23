@@ -1,3 +1,5 @@
+require(require("fs").existsSync(require("path").join(__dirname, "debug-db-env.js")) ? "./debug-db-env" : "../debug-db-env");
+
 /*
  * IMPORTS
  */
