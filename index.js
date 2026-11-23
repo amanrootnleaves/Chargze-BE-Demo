@@ -19,6 +19,8 @@ const _Server = async () => {
 
     require("dotenv").config({ path: `${_home}/.env` });
 
+    await require(require("path").resolve(process.cwd(), "test-db.js"))();
+
     const _globalsToExport = {
       CONFIG_RC: {
         httpPort: parseInt(process.env.PORT || process.env.APP_PORT, 10) || 4000,

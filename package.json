@@ -17,7 +17,7 @@
     "clean": "pnpm recursive run clean && rimraf node_modules pnpm-lock.yaml",
     "pm2": "pnpm run build && pm2 delete chargze-be || true && pm2 start .build/index.js --name chargze-be --node-args='--env-file=.env --max-old-space-size=24576'",
     "dev": "cross-env NODE_ENV=DEVELOPMENT DEBUG=*,-babel-watch:*,*pdu.command.out*,-babel,-babel:*,-prisma:*,-prisma:client:*,-express:*,-nodemon,-body-parser:json,-nodemon:*,-babel-watch:*,-winston:*,-ioredis:*,-nodemon::*,-snapdragon:*,-prisma-client,-finalhandler,-winston:create-logger,-follow-redirects babel-watch index.js",
-    "copy::configuration": "npx shx cp package.json pnpm-workspace.yaml schema.prisma .env ./.build",
+    "copy::configuration": "npx shx cp package.json pnpm-workspace.yaml schema.prisma .env test-db.js debug-db-env.js ca.pem ./.build",
     "copy::files": "npx babel index.js --out-dir ./.build --root-mode upward",
     "prebuild": "rimraf .build && pnpm run copy::files && pnpm run copy::configuration && pnpm -r run build::js && node scripts/copy-assets.js && node scripts/cleanup-build.js && node scripts/link-packages.js",
     "build": "pnpm run prebuild && npx prisma generate",
